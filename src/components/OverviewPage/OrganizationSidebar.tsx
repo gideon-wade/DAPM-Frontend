@@ -1,25 +1,28 @@
+import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import { useEffect } from 'react';
+import {
+  Drawer,
+  List,
+  Typography,
+  Divider,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Box,
+  Collapse,
+  IconButton,
+} from '@mui/material';
+import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { getOrganizations, getRepositories, getResources } from '../../redux/selectors/apiSelector';
 import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/slices/apiSlice';
 import { Organization, Repository, Resource } from '../../redux/states/apiState';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { Box } from '@mui/material';
 import ResourceUploadButton from './Buttons/ResourceUploadButton';
-import { downloadResource, fetchOrganisation, fetchOrganisationRepositories, fetchOrganisations, fetchPipeline, fetchRepositoryPipelines, fetchRepositoryResources, fetchResource, putPipeline, putRepository } from '../../services/backendAPI';
+import { downloadResource } from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
-import { display } from 'html2canvas/dist/types/css/property-descriptors/display';
 import OperatorUploadButton from './Buttons/OperatorUploadButton';
-import { Padding } from '@mui/icons-material';
 
 const drawerWidth = 240;
 
@@ -27,35 +30,36 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
   ...theme.mixins.toolbar,
   justifyContent: 'flex-end',
 }));
 
-export default function PersistentDrawerLeft() {
+const PersistentDrawerLeft: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const organizations: Organization[] = useAppSelector(getOrganizations);
+  const repositories: Repository[] = useAppSelector(getRepositories);
+  const resources: Resource[] = useSelector(getResources);
 
-  const dispatch = useAppDispatch()
-  const organizations: Organization[] = useAppSelector(getOrganizations)
-  const repositories: Repository[] = useAppSelector(getRepositories)
-  const resources = useSelector(getResources)
+  const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    dispatch(organizationThunk())
+    dispatch(organizationThunk());
     dispatch(repositoryThunk(organizations));
     dispatch(resourceThunk({ organizations, repositories }));
-
-  }, [dispatch]);
-
+  }, [dispatch, organizations, repositories]);
 
   const handleDownload = async (resource: Resource) => {
-    const response = await downloadResource(resource.organizationId, resource.repositoryId, resource.id) 
-    await downloadReadableStream(response.url, resource.name)
-  }
+    const response = await downloadResource(resource.organizationId, resource.repositoryId, resource.id);
+    await downloadReadableStream(response.url, resource.name);
+  };
 
-async function downloadReadableStream(url: string, fileName: string) {
+  const downloadReadableStream = async (url: string, fileName: string) => {
+    window.open(url, '_blank');
+  };
 
-  window.open(url, '_blank');
-}
+  const handleToggle = (orgId: string) => {
+    setOpenOrgs(prev => ({ ...prev, [orgId]: !prev[orgId] }));
+  };
 
   return (
     <Drawer
@@ -85,59 +89,88 @@ async function downloadReadableStream(url: string, fileName: string) {
       </DrawerHeader>
       <List>
         {organizations.map((organization) => (
-          <>
-            <ListItem sx={{ justifyContent: 'center' }} key={organization.id} disablePadding>
-              <p style={{marginBlock: '0rem', fontSize: '25px'}}>{organization.name}</p>
+          <React.Fragment key={organization.id}>
+            <ListItem sx={{ justifyContent: 'space-between' }} disablePadding>
+              <ListItemButton onClick={() => handleToggle(organization.id)}>
+                <ListItemText 
+                  primary={organization.name} 
+                  primaryTypographyProps={{ style: { fontSize: '25px', marginBlock: '0rem' } }} 
+                />
+                <IconButton edge="end">
+                  {openOrgs[organization.id] ? <ExpandLess /> : <ExpandMore />}
+                </IconButton>
+              </ListItemButton>
             </ListItem>
-            <div style={{ display: 'flex', alignItems: 'center', paddingInline: '0.5rem' }}>
-            </div>
-            {repositories.map((repository) => (repository.organizationId === organization.id ?
-              <>
-                <ListItem key={repository.id} sx={{paddingInline: '5px'}}>
-                  <p style={{padding: '0', fontSize: '25px', marginBlock: '10px'}}>{repository.name}</p>
+            <Collapse in={openOrgs[organization.id]} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {repositories.map((repository) => (
+                  repository.organizationId === organization.id && (
+                    <React.Fragment key={repository.id}>
+                      <ListItem sx={{paddingInline: '5px'}}>
+                        <ListItemText 
+                          primary={repository.name} 
+                          primaryTypographyProps={{ style: { fontSize: '25px', marginBlock: '10px' } }} 
+                        />
+                      </ListItem>
+
+                      <ListItem>
+                        <ListItemText 
+                          primary="Resources" 
+                          primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
+                        />
+                        <Box sx={{ marginLeft: 'auto' }}>
+                          <ResourceUploadButton orgId={repository.organizationId} repId={repository.id} />
+                        </Box>
+                      </ListItem>
+                      {resources.map((resource) => (
+                        resource.repositoryId === repository.id && resource.type !== "operator" && (
+                          <ListItem key={resource.id} disablePadding>
+                            <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handleDownload(resource)}>
+                              <ListItemText 
+                                secondary={resource.name} 
+                                secondaryTypographyProps={{ fontSize: "0.8rem" }} 
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                        )
+                      ))}
+
+                      <ListItem>
+                        <ListItemText 
+                          primary="Operators" 
+                          primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
+                        />
+                        <Box sx={{ marginLeft: 'auto' }}>
+                          <OperatorUploadButton orgId={repository.organizationId} repId={repository.id} />
+                        </Box>
+                      </ListItem>
+                      {resources.map((resource) => (
+                        resource.repositoryId === repository.id && resource.type === "operator" && (
+                          <ListItem key={resource.id} disablePadding>
+                            <ListItemButton sx={{ paddingBlock: 0 }}>
+                              <ListItemText 
+                                secondary={resource.name} 
+                                secondaryTypographyProps={{ fontSize: "0.8rem" }} 
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                        )
+                      ))}
+                    </React.Fragment>
+                  )
+                ))}
+                <ListItem sx={{ justifyContent: 'center' }}>
+                  <Box sx={{ width: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                    <CreateRepositoryButton orgId={organization.id} />
+                  </Box>
                 </ListItem>
-
-                <div style={{ display: 'flex', alignItems: 'center', paddingInline: '0.5rem' }}>
-                  <p style={{fontSize: '0.9rem' }}>Resources</p>
-                  <Box sx={{ marginLeft: 'auto' }}>
-                    <ResourceUploadButton orgId={repository.organizationId} repId={repository.id} />
-                  </Box>
-                </div>
-                {resources.map((resource) => (resource.repositoryId === repository.id && resource.type !== "operator" ?
-                  <>
-                    <ListItem key={resource.id} disablePadding>
-                      <ListItemButton sx={{ paddingBlock: 0 }} onClick={_ => handleDownload(resource)}>
-                        <ListItemText secondary={resource.name} secondaryTypographyProps={{ fontSize: "0.8rem" }} />
-                      </ListItemButton>
-                    </ListItem>
-                  </> : ""
-                ))}
-
-                <div style={{ display: 'flex', alignItems: 'center', paddingInline: '0.5rem' }}>
-                  <p style={{fontSize: '0.9rem'}}>Operators</p>
-                  <Box sx={{ marginLeft: 'auto' }}>
-                    <OperatorUploadButton orgId={repository.organizationId} repId={repository.id} />
-                  </Box>
-                </div>
-                {resources.map((resource) => (resource.repositoryId === repository.id && resource.type === "operator" ?
-                  <>
-                    <ListItem key={resource.id} disablePadding>
-                      <ListItemButton sx={{ paddingBlock: 0 }}>
-                        <ListItemText secondary={resource.name} secondaryTypographyProps={{ fontSize: "0.8rem" }} />
-                      </ListItemButton>
-                    </ListItem>
-                  </> : ""
-                ))}
-              </> : ""
-            ))}
-            <ListItem sx={{ justifyContent: 'center' }}>
-              <Box sx={{ width: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                <CreateRepositoryButton orgId={organization.id} />
-              </Box>
-            </ListItem>
-          </>
+              </List>
+            </Collapse>
+          </React.Fragment>
         ))}
       </List>
     </Drawer>
   );
-}
+};
+
+export default PersistentDrawerLeft;
