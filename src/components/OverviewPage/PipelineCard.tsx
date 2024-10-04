@@ -3,7 +3,6 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { CardActionArea, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -29,31 +28,36 @@ export default function MediaCard({ id, name, imgData, onDelete }: PipelineCardP
   const handleDelete = () => {
     onDelete(id); 
   };
-  
 
   return (
     <Card sx={{ maxWidth: 345 }}>
       <CardActionArea>
         <CardMedia
           sx={{ height: 140 }}
-          title="green iguana"
+          title={name}
           image={imgData}
           onClick={navigateToPipeline}
         />
-        <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <CardContent>
           <Typography gutterBottom variant="h5" component="div" onClick={navigateToPipeline}>
             {name}
           </Typography>
           <IconButton
-            aria-label="delete"
-            onClick={handleDelete}
-            sx={{ color: 'red' }}
-          ></IconButton>
-          <DeleteIcon 
-            aria-label="delete"
-            onClick={handleDelete}
-            sx={{ color: '#96281b' }}
-          />  
+          aria-label="delete"
+          onClick={handleDelete}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            color: '#96281b',
+            backgroundColor: 'rgba(0, 0, 0, 0.35)',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            },
+          }}
+        >
+          <DeleteIcon />
+        </IconButton>
         </CardContent>
         <Typography variant="body2" color="text.secondary" onClick={navigateToPipeline}>
             Click this to modify the pipeline
@@ -61,6 +65,4 @@ export default function MediaCard({ id, name, imgData, onDelete }: PipelineCardP
       </CardActionArea>
     </Card>
   );
-
-  
 }
