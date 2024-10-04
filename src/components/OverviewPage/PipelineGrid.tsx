@@ -7,7 +7,8 @@ import { Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { addNewPipeline, setImageData } from '../../redux/slices/pipelineSlice';
+import { addNewPipeline, setImageData, removePipeline} from '../../redux/slices/pipelineSlice';
+
 import { getPipelines } from '../../redux/selectors';
 import FlowDiagram from './ImageGeneration/FlowDiagram';
 import ReactDOM from 'react-dom';
@@ -33,6 +34,9 @@ export default function AutoGrid() {
   const createNewPipeline = () => {
     dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, flowData: { nodes: [], edges: [] } }));
     { navigate("/pipeline") }
+  }
+  const handleDeletePipeline = (id: string) => {
+    dispatch(removePipeline(id));
   }
 
   pipelines.map(({ pipeline: flowData, id, name }) => {
@@ -83,7 +87,7 @@ export default function AutoGrid() {
       <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: "10px" }}>
         {pipelines.map(({ id, name, imgData }) => (
           <Grid item xs={12} sm={6} md={4} lg={3} xl={3}>
-            <PipelineCard id={id} name={name} imgData={imgData}></PipelineCard>
+            <PipelineCard id={id} name={name} imgData={imgData} onDelete={handleDeletePipeline}></PipelineCard>
           </Grid>
         ))}
       </Grid>

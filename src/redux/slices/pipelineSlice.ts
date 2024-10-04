@@ -2,6 +2,7 @@ import { addEdge as addFlowEdge, applyEdgeChanges, applyNodeChanges, Connection,
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { EdgeData, NodeData, NodeState, PipelineData, PipelineState } from "../states/pipelineState";
+import { Console } from "console";
 
 export const initialState: PipelineState = {
   pipelines: [],
@@ -29,6 +30,13 @@ const pipelineSlice = createSlice({
       var pipeline = state.pipelines.find(pipeline => pipeline.id === payload.id)
       if (!pipeline) return
       pipeline.imgData = payload.imgData
+    },
+    
+    removePipeline: (state, { payload }: PayloadAction<string>) => {
+      state.pipelines = state.pipelines.filter(pipeline => pipeline.id !== payload);
+      if (state.activePipelineId === payload) {
+        state.activePipelineId = '';
+      }
     },
 
     // actions for undo and redo
@@ -194,6 +202,7 @@ export const {
   addNewPipeline, 
   setActivePipeline, 
   setImageData, 
+  removePipeline,
   
   // actions for undo and redo
   undo,
