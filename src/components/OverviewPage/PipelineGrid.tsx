@@ -7,8 +7,8 @@ import { Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { addNewPipeline, setImageData, removePipeline} from '../../redux/slices/pipelineSlice';
-
+import { addNewPipeline, setImageData, removePipeline, reorderPipelines} from '../../redux/slices/pipelineSlice';
+import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided, DroppableProvided } from 'react-beautiful-dnd';
 import { getPipelines } from '../../redux/selectors';
 import FlowDiagram from './ImageGeneration/FlowDiagram';
 import ReactDOM from 'react-dom';
@@ -78,19 +78,37 @@ export default function AutoGrid() {
     );
   });
 
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) {
+      return;
+    }
+    const newOrder = Array.from(pipelines);
+    const [movedPipeline] = newOrder.splice(result.source.index, 1);
+    newOrder.splice(result.destination.index, 0, movedPipeline);
+  
+    dispatch(reorderPipelines(newOrder));
+  };
+
   return (
     <Box sx={{ flexGrow: 1, flexBasis: "100%" }} >
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => createNewPipeline()}
-        sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginBlockStart: "10px" }}>
-        Create New
-      </Button>
-      <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: "10px" }}>
-        {pipelines.map(({ id, name, imgData }) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} xl={3}>
-            <PipelineCard id={id} name={name} imgData={imgData} onDelete={handleDeletePipeline}></PipelineCard>
-          </Grid>
-        ))}
-      </Grid>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="pipelines" direction="horizontal">
+          {(provided : DroppableProvided) => (
+            <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: '10px' }} ref={provided.innerRef} {...provided.droppableProps}>
+              {pipelines.map(({ id, name, imgData }, index) => (
+                <Draggable key={id} draggableId={id} index={index}>
+                  {(provided: DraggableProvided) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} xl={3} ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                      <PipelineCard id={id} name={name} imgData={imgData} onDelete={handleDeletePipeline}/>
+                    </Grid>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </Grid>
+          )}
+        </Droppable>
+      </DragDropContext>
     </Box>
   );
 }

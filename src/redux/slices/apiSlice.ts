@@ -3,6 +3,7 @@ import { ApiState, Organization, Repository, Resource } from "../states/apiState
 import { fetchOrganisationRepositories, fetchOrganisations, fetchRepository, fetchRepositoryResources } from "../../services/backendAPI";
 import { useAppSelector } from "../../hooks";
 import { getOrganizations } from "../selectors/apiSelector";
+import { NoCurrentOrganizationsError } from "../../utils/Errors";
 
 
 export const initialState: ApiState = {
@@ -82,6 +83,7 @@ export const organizationThunk = createAsyncThunk<
     const organizations = await fetchOrganisations(); // Fetch organizations from the backend API
     return organizations.result; // Return data fetched from the API
   } catch (error) {
+    console.log("organization thunk error")
     return thunkAPI.rejectWithValue(error); // Handle error
   }
 });
@@ -91,7 +93,9 @@ export const repositoryThunk = createAsyncThunk<
   Organization[]
 >("api/fetchRespositories", async (organizations: Organization[], thunkAPI) => {
   try {
-    
+    if (organizations.length > 0) {
+      throw new NoCurrentOrganizationsError();
+    }
     const repositories = [];
       for (const organization of organizations) {
         const repos = await fetchOrganisationRepositories(organization.id);
@@ -99,6 +103,7 @@ export const repositoryThunk = createAsyncThunk<
       }
       return repositories;
   } catch (error) {
+    console.log("repository thunk error")
     return thunkAPI.rejectWithValue(error); // Handle error
   }
 });
@@ -108,7 +113,6 @@ export const resourceThunk = createAsyncThunk<
   { organizations: Organization[]; repositories: Repository[] }
 >("api/fetchResources", async ({organizations, repositories}, thunkAPI) => {
   try {
-    
     const resources: Resource[] = [];
     for (const org of organizations) {
       for (const repo of repositories) {
@@ -121,6 +125,7 @@ export const resourceThunk = createAsyncThunk<
     const result = await Promise.all(resources)
       return result;
   } catch (error) {
+    console.log("resource thunk error")
     return thunkAPI.rejectWithValue(error); // Handle error
   }
 });
