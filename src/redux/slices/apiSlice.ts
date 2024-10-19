@@ -1,10 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { ApiState, Organization, Repository, Resource } from "../states/apiState";
-import { fetchOrganisationRepositories, fetchOrganisations, fetchRepository, fetchRepositoryResources } from "../../services/backendAPI";
-import { useAppSelector } from "../../hooks";
-import { getOrganizations } from "../selectors/apiSelector";
-import { NoCurrentOrganizationsError } from "../../utils/Errors";
 
+import { ApiState, Organization, Repository, Resource } from "../states/apiState";
+import { useBackendAPI } from "../../services/backendAPI";
+import { NoCurrentOrganizationsError } from "../../utils/Errors";
 
 export const initialState: ApiState = {
     organizations: [],
@@ -79,6 +77,8 @@ interface FetchRepositoriesResponse {
 export const organizationThunk = createAsyncThunk<
   FetchOrganizationsResponse
 >("api/fetchOrganizations", async (_, thunkAPI) => {
+  const { fetchOrganisations } = useBackendAPI();
+
   try {
     const organizations = await fetchOrganisations(); // Fetch organizations from the backend API
     return organizations.result; // Return data fetched from the API
@@ -92,6 +92,8 @@ export const repositoryThunk = createAsyncThunk<
   Repository[],
   Organization[]
 >("api/fetchRespositories", async (organizations: Organization[], thunkAPI) => {
+  const { fetchOrganisationRepositories } = useBackendAPI();
+
   try {
     if (organizations.length > 0) {
       throw new NoCurrentOrganizationsError();
@@ -112,6 +114,8 @@ export const resourceThunk = createAsyncThunk<
   Resource[],
   { organizations: Organization[]; repositories: Repository[] }
 >("api/fetchResources", async ({organizations, repositories}, thunkAPI) => {
+  const { fetchRepositoryResources } = useBackendAPI();
+
   try {
     const resources: Resource[] = [];
     for (const org of organizations) {
@@ -122,12 +126,10 @@ export const resourceThunk = createAsyncThunk<
         }
       }
     }
-    const result = await Promise.all(resources)
-      return result;
+
+    return await Promise.all(resources);
   } catch (error) {
     console.log("resource thunk error")
     return thunkAPI.rejectWithValue(error); // Handle error
   }
 });
-
-

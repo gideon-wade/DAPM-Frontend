@@ -19,10 +19,12 @@ import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/s
 import { Organization, Repository, Resource } from '../../redux/states/apiState';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import ResourceUploadButton from './Buttons/ResourceUploadButton';
-import { downloadResource } from '../../services/backendAPI';
+//import { downloadResource, fetchOrganisation, fetchOrganisationRepositories, fetchOrganisations, fetchPipeline, fetchRepositoryPipelines, fetchRepositoryResources, fetchResource, putPipeline, putRepository } from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
 import OperatorUploadButton from './Buttons/OperatorUploadButton';
+import { Padding } from '@mui/icons-material';
+import { useBackendAPI } from "../../services/backendAPI";
 
 const drawerWidth = 240;
 
@@ -35,6 +37,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 }));
 
 const PersistentDrawerLeft: React.FC = () => {
+  const { downloadResource } = useBackendAPI();
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
@@ -43,12 +46,12 @@ const PersistentDrawerLeft: React.FC = () => {
   const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    dispatch(organizationThunk());
-    if (organizations.length > 0) {
-      dispatch(repositoryThunk(organizations));
-      if (repositories.length > 0) dispatch(resourceThunk({ organizations, repositories }));
-    }
-  }, [dispatch, organizations, repositories]);
+    dispatch(organizationThunk())
+    dispatch(repositoryThunk(organizations));
+    dispatch(resourceThunk({ organizations, repositories }));
+
+  }, [dispatch]);
+
 
   const handleDownload = async (resource: Resource) => {
     const response = await downloadResource(resource.organizationId, resource.repositoryId, resource.id);
