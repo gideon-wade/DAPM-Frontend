@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { ApiState, Organization, Repository, Resource } from "../states/apiState";
-import { useBackendAPI } from "../../services/backendAPI";
-import { NoCurrentOrganizationsError } from "../../utils/Errors";
+import { backendAPIEndpoints } from "../../services/backendAPI";
+import { NoAssociatedRepositoriesToOrganizationsError, NoCurrentOrganizationsError } from "../../utils/Errors";
 
 export const initialState: ApiState = {
     organizations: [],
@@ -77,7 +77,7 @@ interface FetchRepositoriesResponse {
 export const organizationThunk = createAsyncThunk<
   FetchOrganizationsResponse
 >("api/fetchOrganizations", async (_, thunkAPI) => {
-  const { fetchOrganisations } = useBackendAPI();
+  const { fetchOrganisations } = backendAPIEndpoints();
 
   try {
     const organizations = await fetchOrganisations(); // Fetch organizations from the backend API
@@ -92,15 +92,16 @@ export const repositoryThunk = createAsyncThunk<
   Repository[],
   Organization[]
 >("api/fetchRespositories", async (organizations: Organization[], thunkAPI) => {
-  const { fetchOrganisationRepositories } = useBackendAPI();
+  const { fetchOrganisationRepositories } = backendAPIEndpoints();
 
   try {
-    if (organizations.length > 0) {
+    if (organizations.length == 0) {
       throw new NoCurrentOrganizationsError();
     }
     const repositories = [];
       for (const organization of organizations) {
         const repos = await fetchOrganisationRepositories(organization.id);
+        if (repos === undefined) throw new NoAssociatedRepositoriesToOrganizationsError(organization.id);
         repositories.push(...repos.result.repositories);
       }
       return repositories;
@@ -114,7 +115,7 @@ export const resourceThunk = createAsyncThunk<
   Resource[],
   { organizations: Organization[]; repositories: Repository[] }
 >("api/fetchResources", async ({organizations, repositories}, thunkAPI) => {
-  const { fetchRepositoryResources } = useBackendAPI();
+  const { fetchRepositoryResources } = backendAPIEndpoints();
 
   try {
     const resources: Resource[] = [];

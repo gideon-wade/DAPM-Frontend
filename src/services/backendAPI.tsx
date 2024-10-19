@@ -6,7 +6,41 @@ const get = async (endpoint: string) => {
         const response = await fetch(`${path}${endpoint}`);
         if (!response.ok) return;
 
-        return await response.json();
+        const jsonData = await response.json();
+        //return await response.json();
+        if (jsonData.status !== undefined) {
+            return jsonData;
+        }
+        // Fetch additional data recursively
+        const { fetchStatus } = backendAPIEndpoints();
+        console.log(jsonData)
+        console.log(endpoint)
+        const getData = async (ticketId: string): Promise<any> => {
+            const maxRetries = 10;
+            const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+            for (let retries = 0; retries < maxRetries; retries++) {
+                try {
+                    const data = await fetchStatus(ticketId);
+                    console.log(data);
+                    if (data.status) {
+                        return data;
+                    }
+                    await delay(1000); // Wait for 1 second before retrying
+                } catch (error) {
+                    if (retries === maxRetries - 1) {
+                        throw new Error('Max retries reached');
+                    }
+                    console.log("I am error " + error);
+                }
+            }
+            throw new Error('Failed to fetch data');
+        };
+
+        // Call getData function with the ticketId obtained from fetchOrganisations
+        return await getData(jsonData.ticketId);
+
+
     } catch (e) {
         console.error(`Error fetching data from ${endpoint}: `, e);
     }
@@ -31,7 +65,7 @@ const post = async (endpoint: string, body?: any) => {
     }
 };
 
-export const useBackendAPI = () => {
+export const backendAPIEndpoints = () => {
     const PostNewPeer = async (domainName: string) => {
         return await post(`/system/collab-handshake`, { targetPeerDomain: domainName });
     };

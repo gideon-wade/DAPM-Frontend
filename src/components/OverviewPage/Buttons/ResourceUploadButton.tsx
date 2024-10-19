@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Box, Button, FormControl, FormLabel, MenuItem, Modal, Select, TextField, Typography } from '@mui/material';
 
-import { useBackendAPI } from '../../../services/backendAPI';
+import { backendAPIEndpoints } from '../../../services/backendAPI';
 
 export interface UploadButtonProps {
     orgId: string,
@@ -21,7 +21,7 @@ const style = {
 };
 
 const ResourceUploadButton = ({ orgId, repId }: UploadButtonProps) => {
-    const { createResource } = useBackendAPI();
+    const { createResource } = backendAPIEndpoints();
     const dataTypes = ["eventLog", "bpmnModel", "petriNet"]
 
     const [open, setOpen] = useState(false);

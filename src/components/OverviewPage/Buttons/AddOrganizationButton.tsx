@@ -1,7 +1,7 @@
 import {ChangeEvent, useState} from "react";
 import { Box, Button, Modal, TextField, Typography } from "@mui/material";
 
-import { useBackendAPI } from "../../../services/backendAPI";
+import { backendAPIEndpoints } from "../../../services/backendAPI";
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -16,7 +16,7 @@ const style = {
 };
 
 export default function AddOrganizationButton() {
-    const { PostNewPeer } = useBackendAPI();
+    const { PostNewPeer } = backendAPIEndpoints();
     const [domainName, setDomainName] = useState('');
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);

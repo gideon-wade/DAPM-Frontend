@@ -11,10 +11,10 @@ import { updatePipelineName } from "../../redux/slices/pipelineSlice";
 import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../redux/states/pipelineState";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
-import { useBackendAPI } from "../../services/backendAPI";
+import { backendAPIEndpoints } from "../../services/backendAPI";
 
 export default function PipelineAppBar() {
-  const { createPipeline, createExecution, createCommandStart } = useBackendAPI();
+  const { createPipeline, createExecution, createCommandStart } = backendAPIEndpoints();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 

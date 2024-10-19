@@ -1,7 +1,7 @@
 import {FormEvent, useState} from "react";
 import { Box, Button, FormControl, FormLabel, Modal, TextField, Typography } from '@mui/material';
 
-import { useBackendAPI } from "../../../services/backendAPI";
+import { backendAPIEndpoints } from "../../../services/backendAPI";
 
 export interface UploadButtonProps {
     orgId: string,
@@ -21,7 +21,7 @@ const style = {
 };
 
 const OperatorUploadButton = ({ orgId, repId }: UploadButtonProps) => {
-    const { createOperator } = useBackendAPI();
+    const { createOperator } = backendAPIEndpoints();
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
