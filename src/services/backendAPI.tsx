@@ -13,8 +13,6 @@ const get = async (endpoint: string) => {
         }
         // Fetch additional data recursively
         const { fetchStatus } = backendAPIEndpoints();
-        console.log(jsonData)
-        console.log(endpoint)
         const getData = async (ticketId: string): Promise<any> => {
             const maxRetries = 10;
             const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -22,7 +20,6 @@ const get = async (endpoint: string) => {
             for (let retries = 0; retries < maxRetries; retries++) {
                 try {
                     const data = await fetchStatus(ticketId);
-                    console.log(data);
                     if (data.status) {
                         return data;
                     }
