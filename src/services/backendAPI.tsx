@@ -1,5 +1,5 @@
-import { Stream } from "stream";
-import { json } from "stream/consumers";
+// const path = `se2-e.compute.dtu.dk`
+const path = `http://localhost:5000`;
 
 const vmPath = `dapm1.compute.dtu.dk:5000`
 const localPath = `localhost:5000`

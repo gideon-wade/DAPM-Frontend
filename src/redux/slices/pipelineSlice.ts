@@ -30,6 +30,16 @@ const pipelineSlice = createSlice({
       if (!pipeline) return
       pipeline.imgData = payload.imgData
     },
+    
+    removePipeline: (state, { payload }: PayloadAction<string>) => {
+      state.pipelines = state.pipelines.filter(pipeline => pipeline.id !== payload);
+      if (state.activePipelineId === payload) {
+        state.activePipelineId = '';
+      }
+    },
+    reorderPipelines: (state, { payload }: PayloadAction<PipelineData[]>) => {
+      state.pipelines = payload;
+    },
 
     // actions for undo and redo
 
@@ -194,6 +204,8 @@ export const {
   addNewPipeline, 
   setActivePipeline, 
   setImageData, 
+  removePipeline,
+  reorderPipelines,
   
   // actions for undo and redo
   undo,
