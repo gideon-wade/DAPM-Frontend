@@ -9,12 +9,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 import { updatePipelineName } from "../../redux/slices/pipelineSlice";
 import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../redux/states/pipelineState";
+import { putCommandStart, putExecution, putPipeline, executionStatus } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
 import { backendAPIEndpoints } from "../../services/backendAPI";
 
 export default function PipelineAppBar() {
-  const { createPipeline, createExecution, createCommandStart } = backendAPIEndpoints();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -127,11 +127,11 @@ export default function PipelineAppBar() {
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
-    // TODO: need to be tested
-    const pipelineId = await createPipeline(selectedOrg.id, selectedRepo.id, requestData)
-    const executionId = await createExecution(selectedOrg.id, selectedRepo.id, pipelineId)
-    await createCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
-
+    const pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
+    const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
+    await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
+    await executionStatus(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
+    alert("Pipeline is finished");
   }
 
   return (
