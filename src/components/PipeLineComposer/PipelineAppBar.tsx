@@ -8,7 +8,7 @@ import { updatePipelineName } from "../../redux/slices/pipelineSlice";
 import EditIcon from '@mui/icons-material/Edit';
 import { Node } from "reactflow";
 import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../redux/states/pipelineState";
-import { putCommandStart, putExecution, putPipeline } from "../../services/backendAPI";
+import { putCommandStart, putExecution, putPipeline, executionStatus } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
 
@@ -129,7 +129,8 @@ export default function PipelineAppBar() {
     const pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
     const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
     await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
-
+    await executionStatus(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
+    alert("Pipeline is finished");
   }
 
   return (
