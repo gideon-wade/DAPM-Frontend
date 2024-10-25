@@ -12,7 +12,6 @@ import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../re
 import { putCommandStart, putExecution, putPipeline, executionStatus } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
-import { backendAPIEndpoints } from "../../services/backendAPI";
 
 export default function PipelineAppBar() {
   const navigate = useNavigate();

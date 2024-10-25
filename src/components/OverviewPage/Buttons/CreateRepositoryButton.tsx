@@ -1,6 +1,6 @@
 import { FormEvent, useState, useEffect } from "react";
 import { Box, Button, FormControl, FormLabel, Modal, TextField, Typography, CircularProgress, Snackbar, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { backendAPIEndpoints } from "../../../services/backendAPI";
+import { createRepository } from "../../../services/backendAPI";
 
 export interface CreateRepositoryButtonProps {
   orgId: string,
@@ -19,7 +19,6 @@ const style = {
 };
 
 const CreateRepositoryButton = ({ orgId }: CreateRepositoryButtonProps) => {
-  const { createRepository } = backendAPIEndpoints();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [timeout, setTimeout] = useState(0);
