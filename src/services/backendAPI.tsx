@@ -4,7 +4,7 @@
 const vmPath = `se2-e.compute.dtu.dk:5000`
 const localPath = `localhost:5000`
 
-const path = vmPath
+const path = localPath
 
 const get = async (endpoint: string) => {
     console.log("Calling get endpoint", `http://${path}${endpoint}`);
@@ -141,7 +141,7 @@ export async function createCommandStart (orgId: string, repId: string, pipeId: 
 
 export async function executionStatus (orgId: string, repId: string, pipeId: string, exeId: string) {
     let response = await get(`/Organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}/executions/${exeId}/status`);
-	return await getData(response.ticketId);
+    return await getData(response.ticketId);
 }
 
 export async function createOperator (orgId: string, repId: string, formData: FormData) {
