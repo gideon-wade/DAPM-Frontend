@@ -4,7 +4,7 @@
 const vmPath = `se2-e.compute.dtu.dk:5000`
 const localPath = `localhost:5000`
 
-const path = vmPath;
+const path = localPath
 
 const get = async (endpoint: string) => {
     console.log("Calling get endpoint", `http://${path}${endpoint}`);
