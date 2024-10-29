@@ -45,15 +45,13 @@ const PersistentDrawerLeft: React.FC = () => {
 
   useEffect(() => {
     dispatch(organizationThunk());
-  }, [dispatch]);
-
+  }, []);
   useEffect(() => {
-    if (organizations.length > 0) {
-      dispatch(repositoryThunk(organizations));
-      if (repositories.length > 0) dispatch(resourceThunk({ organizations, repositories }));
-    }
-  }, [dispatch, organizations, repositories]);
-
+    dispatch(repositoryThunk(organizations));
+  }, [organizations]);
+  useEffect(() => {
+    dispatch(resourceThunk({ organizations, repositories }));
+  }, [repositories]);
 
   const handleDownload = async (resource: Resource) => {
     const response = await downloadResource(resource.organizationId, resource.repositoryId, resource.id);
