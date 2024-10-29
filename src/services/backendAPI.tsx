@@ -4,7 +4,7 @@
 const vmPath = `se2-e.compute.dtu.dk:5000`
 const localPath = `localhost:5000`
 
-const path = vmPath
+const path = vmPath;
 
 const get = async (endpoint: string) => {
     console.log("Calling get endpoint", `http://${path}${endpoint}`);
@@ -21,12 +21,12 @@ const get = async (endpoint: string) => {
 };
 
 const post = async (endpoint: string, body?: any) => {
-    console.log("Calling post endpoint", `http://${path}${endpoint}`);
+    console.log("Calling post endpoint", `http://${path}${endpoint} with data ${body} / ${JSON.stringify(body)}`);
     try {
         const response = await fetch(`http://${path}${endpoint}`, {
             method: "POST",
-            body: body,
-            headers: {
+            body: (body instanceof FormData) ? body : JSON.stringify(body),
+            headers: (body instanceof FormData) ? {} : {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             }
@@ -53,7 +53,7 @@ const getData = async (ticketId: string): Promise<any> => {
             if (data.status) {
                 return data;
             }
-            await delay(1000); // Wait for 1 second before retrying
+            await delay(3000); // Wait for 3 second before retrying
         } catch (error) {
             if (retries === maxRetries - 1) {
                 throw new Error('Max retries reached');
@@ -63,6 +63,26 @@ const getData = async (ticketId: string): Promise<any> => {
     throw new Error('Failed to fetch data');
 };
 
+const getFile = async (ticketId: string): Promise<any> => {
+    console.log("Getting file for ticket: " + ticketId);
+    const maxRetries = 10;
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  
+    for (let retries = 0; retries < maxRetries; retries++) {
+        try {
+            const data = await fetch(`http://${path}/status/${ticketId}`);
+            if (data.status) {
+                return data;
+            }
+            await delay(3000); // Wait for 3 second before retrying
+        } catch (error) {
+            if (retries === maxRetries - 1) {
+                throw new Error('Max retries reached');
+            }
+        }
+    }
+    throw new Error('Failed to fetch data');
+};
 
 export async function PostNewPeer (domainName: string) {
     let response = await post(`/system/collab-handshake`, { targetPeerDomain: domainName });
@@ -114,34 +134,9 @@ export async function fetchPipeline (orgId: string, repId: string, pipId: string
 	return await getData(response.ticketId);
 }
 
-export async function createRepository (orgId: string, repositoryName: string) {
-    let response = await post(`/Organizations/${orgId}/repositories`, { name: repositoryName });
-	return await getData(response.ticketId);
-}
-
-export async function createResource (orgId: string, repId: string, formData: FormData) {
-    let response = await post(`/Organizations/${orgId}/repositories/${repId}/resources`, formData);
-	return await getData(response.ticketId);
-}
-
-export async function createPipeline (orgId: string, repId: string, pipelineData: any) {
-    let response = await post(`/Organizations/${orgId}/repositories/${repId}/pipelines`, pipelineData);
-	return await getData(response.ticketId);
-}
-
-export async function createExecution (orgId: string, repId: string, pipeId: string) {
-    let response = await post(`/Organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}/executions`);
-	return await getData(response.ticketId);
-}
-
-export async function createCommandStart (orgId: string, repId: string, pipeId: string, exeId: string) {
-    let response = await post(`/Organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}/executions/${exeId}/commands/start`);
-	return await getData(response.ticketId);
-}
-
 export async function executionStatus (orgId: string, repId: string, pipeId: string, exeId: string) {
     let response = await get(`/Organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}/executions/${exeId}/status`);
-	return await getData(response.ticketId);
+    return await getData(response.ticketId);
 }
 
 export async function createOperator (orgId: string, repId: string, formData: FormData) {
@@ -151,21 +146,21 @@ export async function createOperator (orgId: string, repId: string, formData: Fo
 
 export async function downloadResource (orgId: string, repId: string, resId: string) {
     let response = await get(`/Organizations/${orgId}/repositories/${repId}/resources/${resId}/file`);
-	return await getData(response.ticketId);
+	return await getFile(response.ticketId);
 }
 
 export async function putRepository(orgId: string, repositoryName: string) {
-    let response = await post(`/Organizations/${orgId}/repositories`, JSON.stringify({ name: repositoryName }));
+    let response = await post(`/Organizations/${orgId}/repositories`, { name: repositoryName });
     return await getData(response.ticketId);
 }
 
 export async function putResource(orgId: string, repId: string, formData: FormData) {
-    let response = await post(`/Organizations/${orgId}/repositories/${repId}/pipelines`, formData);
-    return await getData(response.ticketId);
+    let response = await post(`/Organizations/${orgId}/repositories/${repId}/resources`, formData);
+    return await get(`/status/${response.ticketId}`);
 }
 
 export async function putPipeline(orgId: string, repId: string, pipelineData: any) {
-    let response = await post(`/Organizations/${orgId}/repositories/${repId}/pipelines`, JSON.stringify(pipelineData));
+    let response = await post(`/Organizations/${orgId}/repositories/${repId}/pipelines`, pipelineData);
     return (await getData(response.ticketId)).result.itemIds.pipelineId;
 }
 

@@ -6,23 +6,8 @@ import { NoAssociatedRepositoriesToOrganizationsError, NoCurrentOrganizationsErr
 
 export const initialState: ApiState = {
     organizations: [],
-    repositories: [{
-      organizationId: "",
-      name: "Repository 1",
-      id: ""
-  },
-  {
-      organizationId: "",
-      name: "Repository 2",
-      id: ""
-  },],
-    resources: [{
-      id: "",
-      name: "resource 1",
-      organizationId: "",
-      repositoryId: "",
-      type: "eventLog"
-  },]
+    repositories: [],
+    resources: []
   }
 
 const apiSlice = createSlice({
@@ -93,9 +78,6 @@ export const repositoryThunk = createAsyncThunk<
 >("api/fetchRespositories", async (organizations: Organization[], thunkAPI) => {
 
   try {
-    if (organizations.length == 0) {
-      throw new NoCurrentOrganizationsError();
-    }
     const repositories = [];
       for (const organization of organizations) {
         const repos = await fetchOrganisationRepositories(organization.id);
