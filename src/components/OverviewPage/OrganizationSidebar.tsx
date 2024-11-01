@@ -14,9 +14,9 @@ import {
 } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
-import { getOrganizations, getRepositories, getResources } from '../../redux/selectors/apiSelector';
+import { getOrganizations, getRepositories, getResources, getPipelines } from '../../redux/selectors/apiSelector';
 import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/slices/apiSlice';
-import { Organization, Repository, Resource } from '../../redux/states/apiState';
+import { Organization, Pipeline, Repository, Resource } from '../../redux/states/apiState';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import ResourceUploadButton from './Buttons/ResourceUploadButton';
 import { downloadResource, fetchOrganisation, fetchOrganisationRepositories, fetchOrganisations, fetchPipeline, fetchRepositoryPipelines, fetchRepositoryResources, fetchResource, putPipeline, putRepository } from '../../services/backendAPI';
@@ -24,6 +24,11 @@ import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
 import OperatorUploadButton from './Buttons/OperatorUploadButton';
 import { Padding } from '@mui/icons-material';
+import { json } from 'stream/consumers';
+
+
+
+
 
 const drawerWidth = 240;
 
@@ -40,6 +45,7 @@ const PersistentDrawerLeft: React.FC = () => {
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
   const resources: Resource[] = useSelector(getResources);
+  // const pipelines : Pipeline[] = useSelector(getPipelines);
 
   const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>({});
 
@@ -53,6 +59,27 @@ const PersistentDrawerLeft: React.FC = () => {
       if (repositories.length > 0) dispatch(resourceThunk({ organizations, repositories }));
     }
   }, [dispatch, organizations, repositories]);
+
+  // Load the pipeline
+  const  [pipelines, setPipelines] = useState<Pipeline[]>([]);
+  useEffect(() => {
+    async function loadPipelines(orgid: string, repid: string) {
+        const jsonPipelineData = await fetchRepositoryPipelines(orgid, repid);
+        // convert to array of pipelines
+        // const pipelines = Object.keys(jsonPipelineData).map((key) => jsonPipelineData[key]);
+        const pipelines = jsonPipelineData.result.pipelines
+
+        // const pipelines = await fetchRepositoryPipelines(orgid, repid);
+        setPipelines(pipelines);
+        console.log("pipe in that weird function : ", pipelines)
+    }
+    if (organizations.length > 0 && repositories.length > 0) {
+        loadPipelines(organizations[0].id, repositories[0].id);
+    }
+    if (true) {
+        console.log("pipe" )
+    }
+}, []);
 
 
   const handleDownload = async (resource: Resource) => {
@@ -157,6 +184,29 @@ const PersistentDrawerLeft: React.FC = () => {
                             <ListItemButton sx={{ paddingBlock: 0 }}>
                               <ListItemText 
                                 secondary={resource.name} 
+                                secondaryTypographyProps={{ fontSize: "0.8rem" }} 
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                        )
+                      ))}
+
+                      
+                      <ListItem>
+                        <ListItemText 
+                          primary="Saved Pipelines" 
+                          primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
+                        />
+                        {/* <Box sx={{ marginLeft: 'auto' }}>
+                          <OperatorUploadButton orgId={repository.organizationId} repId={repository.id} />
+                        </Box> */}
+                      </ListItem>
+                      {pipelines.map((pipeline) => (
+                        pipeline.repositoryId === repository.id && (
+                          <ListItem key={pipeline.id} disablePadding>
+                            <ListItemButton sx={{ paddingBlock: 0 }}>
+                              <ListItemText 
+                                secondary={pipeline.name} 
                                 secondaryTypographyProps={{ fontSize: "0.8rem" }} 
                               />
                             </ListItemButton>

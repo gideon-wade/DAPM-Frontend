@@ -5,25 +5,39 @@ import { fetchOrganisations, fetchOrganisationRepositories, fetchRepositoryResou
 import { NoAssociatedRepositoriesToOrganizationsError, NoCurrentOrganizationsError } from "../../utils/Errors";
 
 export const initialState: ApiState = {
-    organizations: [],
-    repositories: [{
-      organizationId: "",
-      name: "Repository 1",
-      id: ""
+  organizations: [],
+  repositories: [{
+    organizationId: "",
+    name: "Repository 1",
+    id: ""
   },
   {
-      organizationId: "",
-      name: "Repository 2",
-      id: ""
+    organizationId: "",
+    name: "Repository 2",
+    id: ""
   },],
-    resources: [{
-      id: "",
-      name: "resource 1",
-      organizationId: "",
-      repositoryId: "",
-      type: "eventLog"
-  },]
-  }
+  resources: [{
+    id: "",
+    name: "resource 1",
+    organizationId: "",
+    repositoryId: "",
+    type: "eventLog"
+  },],
+  pipelines: [
+    {
+      id: "1",
+      name: "Pipeline 1",
+      organizationId: "1",
+      repositoryId: "1"
+    },
+    {
+      id: "2",
+      name: "Pipeline 2",
+      organizationId: "2",
+      repositoryId: "2"
+    }
+  ]
+}
 
 const apiSlice = createSlice({
     name: 'api',
@@ -131,3 +145,4 @@ export const resourceThunk = createAsyncThunk<
     return thunkAPI.rejectWithValue(error); // Handle error
   }
 });
+

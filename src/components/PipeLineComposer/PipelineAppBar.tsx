@@ -6,10 +6,10 @@ import { AppBar, Box, Button, TextField, Toolbar, Typography } from "@mui/materi
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
 
-import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
+import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
 import { updatePipelineName } from "../../redux/slices/pipelineSlice";
 import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../redux/states/pipelineState";
-import { putCommandStart, putExecution, putPipeline, executionStatus } from "../../services/backendAPI";
+import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
 
@@ -18,6 +18,7 @@ export default function PipelineAppBar() {
   const dispatch = useDispatch();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   const handleStartEditing = () => {
     setIsEditing(true);
@@ -128,9 +129,36 @@ export default function PipelineAppBar() {
 
     const pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
     const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
+
+    console.log("selectedOrg", selectedOrg)
+    console.log("selectedRepo", selectedRepo)
+    console.log("executionId", executionId)
+    console.log("pipelineId", pipelineId)
+
     await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
     await executionStatus(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
     alert("Pipeline is finished");
+  }
+
+  const getPipelines = async () => {
+    const selectedOrg = organizations[0]
+    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
+
+    console.log("selectedOrg", selectedOrg)
+    console.log("selectedRepo", selectedRepo)
+
+    const response = await fetchRepositoryPipelines(selectedOrg.id, selectedRepo.id)
+    console.log("response", response)
+  }
+  const getAPipeline = async (pipelineId: string) => {
+    const selectedOrg = organizations[0]
+    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
+
+    console.log("selectedOrg", selectedOrg)
+    console.log("selectedRepo", selectedRepo)
+
+    const response = await fetchPipeline(selectedOrg.id, selectedRepo.id, pipelineId)
+    console.log("response", response)
   }
 
   return (
@@ -158,6 +186,23 @@ export default function PipelineAppBar() {
         <Button onClick={() => generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
         </Button>
+        <Button onClick={() => getPipelines()}>
+          <Typography variant="body1" sx={{ color: "white" }}>get pipelines</Typography>
+        </Button>
+        <TextField
+          label="Enter text"
+          variant="outlined"
+          value={inputValue}
+          onChange={(event) => setInputValue(event.target.value)}
+          onKeyPress={(event) => {
+            if (event.key === 'Enter') {
+              getAPipeline(inputValue);
+            }
+          }}
+          sx={{ marginLeft: 2, backgroundColor: "black", borderRadius: 1 }}
+        />
+        
+        
       </Toolbar>
     </AppBar>
   )

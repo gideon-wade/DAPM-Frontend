@@ -1,7 +1,10 @@
+import { Pipe } from "stream"
+
 export interface ApiState {
     organizations: Organization[],
     repositories: Repository[],
-    resources: Resource[]
+    resources: Resource[],
+    pipelines: Pipeline[],
 }
 
 export interface Organization {
@@ -24,4 +27,11 @@ export interface Resource {
     repositoryId: string,
     type: string
 
+}
+
+export interface Pipeline {
+    id: string,
+    name: string,
+    organizationId: string,
+    repositoryId: string
 }
