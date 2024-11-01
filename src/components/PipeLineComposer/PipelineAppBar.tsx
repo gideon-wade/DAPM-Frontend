@@ -20,6 +20,13 @@ export default function PipelineAppBar() {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
+  const STATUS = {
+    UNDEPLOYED: "Undeployed",
+    DEPLOYED: "Deployed",
+    FINISHED: "Finished",
+    ERROR: "Error",
+  };
+  const [status, setStatus] = useState(STATUS.UNDEPLOYED);
   const handleStartEditing = () => {
     setIsEditing(true);
   };
@@ -42,6 +49,7 @@ export default function PipelineAppBar() {
   // TODO: need to be tested
   const generateJson = async () => {
 
+    setStatus(STATUS.DEPLOYED);
     const edges = flowData!.edges.map(edge => {
       return {sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle}
     });
@@ -137,7 +145,7 @@ export default function PipelineAppBar() {
 
     await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
     await executionStatus(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
-    alert("Pipeline is finished");
+    setStatus(STATUS.FINISHED);
   }
 
   const getPipelines = async () => {
@@ -183,7 +191,10 @@ export default function PipelineAppBar() {
             </Box>
           )}
         </Box>
-        <Button onClick={() => generateJson()}>
+        <Typography variant="body1" sx={{ color: "white" }}>
+          Status: {status}
+        </Typography>
+        <Button onClick={() => status != STATUS.DEPLOYED ? generateJson() : alert("Pipeline is already deployed")}>
           <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
         </Button>
         <Button onClick={() => getPipelines()}>

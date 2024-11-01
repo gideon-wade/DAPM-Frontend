@@ -52,9 +52,13 @@ const PersistentDrawerLeft: React.FC = () => {
 
   useEffect(() => {
     dispatch(organizationThunk());
-  }, [dispatch]);
-
+  }, []);
   useEffect(() => {
+    dispatch(repositoryThunk(organizations));
+  }, [organizations]);
+  useEffect(() => {
+    dispatch(resourceThunk({ organizations, repositories }));
+  }, [repositories]);
     if (organizations.length > 0) {
       dispatch(repositoryThunk(organizations));
       if (repositories.length > 0) dispatch(resourceThunk({ organizations, repositories }));

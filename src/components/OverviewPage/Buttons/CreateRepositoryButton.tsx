@@ -1,6 +1,6 @@
 import { FormEvent, useState, useEffect } from "react";
 import { Box, Button, FormControl, FormLabel, Modal, TextField, Typography, CircularProgress, Snackbar, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { createRepository } from "../../../services/backendAPI";
+import { putRepository } from "../../../services/backendAPI";
 
 export interface CreateRepositoryButtonProps {
   orgId: string,
@@ -60,7 +60,7 @@ const CreateRepositoryButton = ({ orgId }: CreateRepositoryButtonProps) => {
     setTimeout(0);
 
     try {
-      const result = await createRepository(orgId, repositoryName);
+      const result = await putRepository(orgId, repositoryName);
       console.log('repository successfully created:', result);
       setShowSuccessDialog(true);
     } catch (error) {
