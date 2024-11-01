@@ -106,7 +106,7 @@ export default function AutoGrid() {
     <Box sx={{ flexGrow: 1, flexBasis: "100%" }} >
       <Button variant="contained" startIcon={<AddIcon />} onClick={() => createNewPipeline()}
         sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginBlockStart: "10px" }}>
-        Create New
+        Create Pipeline
       </Button>
       <DndProvider backend={HTML5Backend}>
         <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: '10px' }}>

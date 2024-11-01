@@ -79,8 +79,8 @@ export default function AddOrganizationButton() {
       >
         <Box sx={style}>
           <Box sx={{display: 'flex', flexDirection: 'column'}}>
-            <Typography id="modal-modal-title" variant="h6" component="h2" sx={{color: 'black'}}>
-              Add Organization
+            <Typography id="modal-modal-title" variant="h6" component="h2" sx={{color: 'white'}}>
+              Connect to Peer
             </Typography>
             <TextField
               id="outlined-controlled"
@@ -93,7 +93,7 @@ export default function AddOrganizationButton() {
             />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Button onClick={handleUpload} disabled={loading}>
-                {loading ? 'Uploading...' : 'Upload'}
+                {loading ? 'Connecting...' : 'Connect'}
               </Button>
               {loading && <CircularProgress size={24} />}
               {timeout >= 5 && timeout < 10 && (
@@ -123,7 +123,7 @@ export default function AddOrganizationButton() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Organization Added!
+            Connected to Peer!
           </DialogContentText>
         </DialogContent>
         <DialogActions>
