@@ -9,17 +9,23 @@ import EditIcon from '@mui/icons-material/Edit';
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 import { updatePipelineName } from "../../redux/slices/pipelineSlice";
 import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../redux/states/pipelineState";
+import { putCommandStart, putExecution, putPipeline, executionStatus } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
-import { backendAPIEndpoints } from "../../services/backendAPI";
 
 export default function PipelineAppBar() {
-  const { createPipeline, createExecution, createCommandStart } = backendAPIEndpoints();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [isEditing, setIsEditing] = useState(false);
 
+  const STATUS = {
+    UNDEPLOYED: "Undeployed",
+    DEPLOYED: "Deployed",
+    FINISHED: "Finished",
+    ERROR: "Error",
+  };
+  const [status, setStatus] = useState(STATUS.UNDEPLOYED);
   const handleStartEditing = () => {
     setIsEditing(true);
   };
@@ -42,6 +48,7 @@ export default function PipelineAppBar() {
   // TODO: need to be tested
   const generateJson = async () => {
 
+    setStatus(STATUS.DEPLOYED);
     const edges = flowData!.edges.map(edge => {
       return {sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle}
     });
@@ -127,11 +134,11 @@ export default function PipelineAppBar() {
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
-    // TODO: need to be tested
-    const pipelineId = await createPipeline(selectedOrg.id, selectedRepo.id, requestData)
-    const executionId = await createExecution(selectedOrg.id, selectedRepo.id, pipelineId)
-    await createCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
-
+    const pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
+    const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
+    await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
+    await executionStatus(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
+    setStatus(STATUS.FINISHED);
   }
 
   return (
@@ -156,7 +163,10 @@ export default function PipelineAppBar() {
             </Box>
           )}
         </Box>
-        <Button onClick={() => generateJson()}>
+        <Typography variant="body1" sx={{ color: "white" }}>
+          Status: {status}
+        </Typography>
+        <Button onClick={() => status != STATUS.DEPLOYED ? generateJson() : alert("Pipeline is already deployed")}>
           <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
         </Button>
       </Toolbar>

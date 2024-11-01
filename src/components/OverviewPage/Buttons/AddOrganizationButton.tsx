@@ -1,6 +1,6 @@
 import { ChangeEvent, useState, useEffect } from "react";
 import { Box, Button, Modal, TextField, Typography, CircularProgress, Snackbar, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import { backendAPIEndpoints } from "../../../services/backendAPI";
+import { PostNewPeer } from "../../../services/backendAPI";
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -15,7 +15,6 @@ const style = {
 };
 
 export default function AddOrganizationButton() {
-  const { PostNewPeer } = backendAPIEndpoints();
   const [domainName, setDomainName] = useState('');
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);

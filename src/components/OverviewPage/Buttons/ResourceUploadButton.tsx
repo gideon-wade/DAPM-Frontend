@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Box, Button, FormControl, FormLabel, MenuItem, Modal, Select, TextField, Typography } from '@mui/material';
 
-import { backendAPIEndpoints } from '../../../services/backendAPI';
+import { putResource } from '../../../services/backendAPI';
 
 export interface UploadButtonProps {
     orgId: string,
@@ -21,7 +21,6 @@ const style = {
 };
 
 const ResourceUploadButton = ({ orgId, repId }: UploadButtonProps) => {
-    const { createResource } = backendAPIEndpoints();
     const dataTypes = ["eventLog", "bpmnModel", "petriNet"]
 
     const [open, setOpen] = useState(false);
@@ -39,7 +38,7 @@ const ResourceUploadButton = ({ orgId, repId }: UploadButtonProps) => {
 
         if (formData.get('ResourceFile')) {
             try {
-                const result = await createResource(orgId, repId, formData);
+                const result = await putResource(orgId, repId, formData);
                 console.log('Resource successfully uploaded:', result);
             } catch (error) {
                 console.error('Error uploading resource:', error);

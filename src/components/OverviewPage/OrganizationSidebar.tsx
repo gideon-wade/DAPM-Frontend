@@ -19,12 +19,11 @@ import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/s
 import { Organization, Repository, Resource } from '../../redux/states/apiState';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import ResourceUploadButton from './Buttons/ResourceUploadButton';
-//import { downloadResource, fetchOrganisation, fetchOrganisationRepositories, fetchOrganisations, fetchPipeline, fetchRepositoryPipelines, fetchRepositoryResources, fetchResource, putPipeline, putRepository } from '../../services/backendAPI';
+import { downloadResource, fetchOrganisation, fetchOrganisationRepositories, fetchOrganisations, fetchPipeline, fetchRepositoryPipelines, fetchRepositoryResources, fetchResource, putPipeline, putRepository } from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
 import OperatorUploadButton from './Buttons/OperatorUploadButton';
 import { Padding } from '@mui/icons-material';
-import { backendAPIEndpoints } from "../../services/backendAPI";
 
 const drawerWidth = 240;
 
@@ -37,7 +36,6 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 }));
 
 const PersistentDrawerLeft: React.FC = () => {
-  const { downloadResource } = backendAPIEndpoints();
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
@@ -47,15 +45,13 @@ const PersistentDrawerLeft: React.FC = () => {
 
   useEffect(() => {
     dispatch(organizationThunk());
-  }, [dispatch]);
-
+  }, []);
   useEffect(() => {
-    if (organizations.length > 0) {
-      dispatch(repositoryThunk(organizations));
-      if (repositories.length > 0) dispatch(resourceThunk({ organizations, repositories }));
-    }
-  }, [dispatch, organizations, repositories]);
-
+    dispatch(repositoryThunk(organizations));
+  }, [organizations]);
+  useEffect(() => {
+    dispatch(resourceThunk({ organizations, repositories }));
+  }, [repositories]);
 
   const handleDownload = async (resource: Resource) => {
     const response = await downloadResource(resource.organizationId, resource.repositoryId, resource.id);
