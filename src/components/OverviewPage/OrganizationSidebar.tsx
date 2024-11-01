@@ -13,11 +13,13 @@ import {
   IconButton,
 } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { getOrganizations, getRepositories, getResources, getPipelines } from '../../redux/selectors/apiSelector';
 import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/slices/apiSlice';
 import { Organization, Pipeline, Repository, Resource } from '../../redux/states/apiState';
 import { useAppDispatch, useAppSelector } from '../../hooks';
+import { v4 as uuidv4 } from 'uuid';
 import ResourceUploadButton from './Buttons/ResourceUploadButton';
 import { downloadResource, fetchOrganisation, fetchOrganisationRepositories, fetchOrganisations, fetchPipeline, fetchRepositoryPipelines, fetchRepositoryResources, fetchResource, putPipeline, putRepository } from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
@@ -25,8 +27,7 @@ import AddOrganizationButton from './Buttons/AddOrganizationButton';
 import OperatorUploadButton from './Buttons/OperatorUploadButton';
 import { Padding } from '@mui/icons-material';
 import { json } from 'stream/consumers';
-
-
+import { addNewPipeline } from '../../redux/slices/pipelineSlice';
 
 
 
@@ -76,9 +77,7 @@ const PersistentDrawerLeft: React.FC = () => {
     if (organizations.length > 0 && repositories.length > 0) {
         loadPipelines(organizations[0].id, repositories[0].id);
     }
-    if (true) {
-        console.log("pipe" )
-    }
+  
 }, []);
 
 
@@ -95,6 +94,18 @@ const PersistentDrawerLeft: React.FC = () => {
     setOpenOrgs(prev => ({ ...prev, [orgId]: !prev[orgId] }));
   };
 
+  const handlePipelineClick = async (pipeline: Pipeline) => {
+    console.log('Pipeline clicked:', pipeline);
+    
+    const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
+    // addNewPipeline({id: response.result.pipelines[0].id, flowData: {edges : response.result.pipelines[0].pipeline.edges, nodes: response.result.pipelines[0].pipeline.nodes}});
+
+    addNewPipeline({id: response.result.pipelines[0].id, flowData: response.result.pipelines[0].pipeline});
+    console.log("Called addd new");
+    //addNewPipeline({ id: `pipeline-${uuidv4()}`, flowData: { nodes: [], edges: [] } });
+    
+    // Add your logic here, e.g., navigate to a pipeline detail page
+};
   return (
     <Drawer
       PaperProps={{
@@ -192,27 +203,24 @@ const PersistentDrawerLeft: React.FC = () => {
                       ))}
 
                       
-                      <ListItem>
-                        <ListItemText 
-                          primary="Saved Pipelines" 
-                          primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
-                        />
-                        {/* <Box sx={{ marginLeft: 'auto' }}>
-                          <OperatorUploadButton orgId={repository.organizationId} repId={repository.id} />
-                        </Box> */}
-                      </ListItem>
-                      {pipelines.map((pipeline) => (
-                        pipeline.repositoryId === repository.id && (
-                          <ListItem key={pipeline.id} disablePadding>
-                            <ListItemButton sx={{ paddingBlock: 0 }}>
-                              <ListItemText 
+<ListItem>
+                <ListItemText 
+                    primary="Saved Pipelines" 
+                    primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
+                />
+            </ListItem>
+            {Array.isArray(pipelines) && pipelines.map((pipeline) => (
+                pipeline.repositoryId === repository.id && (
+                    <ListItem key={pipeline.id} disablePadding>
+                        <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
+                            <ListItemText 
                                 secondary={pipeline.name} 
                                 secondaryTypographyProps={{ fontSize: "0.8rem" }} 
-                              />
-                            </ListItemButton>
-                          </ListItem>
-                        )
-                      ))}
+                            />
+                        </ListItemButton>
+                    </ListItem>
+                )
+            ))}
                     </React.Fragment>
                   )
                 ))}
