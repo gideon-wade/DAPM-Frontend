@@ -11,6 +11,7 @@ import { RouterProvider, createBrowserRouter, createHashRouter } from "react-rou
 import PipelineComposer from "./routes/PipeLineComposer";
 import UserPage from "./routes/OverviewPage";
 import { loadState, saveState } from "./redux/browser-storage";
+import LoginPage from "./components/LoginPage/LoginPage";
 
 // Configure redux-persist
 const persistConfig = {
@@ -42,20 +43,23 @@ store.subscribe(
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 
-
-
 const router = createBrowserRouter([
   {
     path: "/",
     element: <UserPage/>,
-
   },
   {
     path: "/pipeline",
     element: <PipelineComposer/>,
+  },
+  {
+    path: "/login",
+    element: <LoginPage/>,
   }
 ]);
 
+
+// TODO: check if auth., if not redirect to LoginPage
 export default function App() {
   return (
     <ThemeProvider theme={darkTheme}>
