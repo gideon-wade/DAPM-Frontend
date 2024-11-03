@@ -1,9 +1,9 @@
 import { Box } from "@mui/material";
+import { withAuthenticationRequired } from '@auth0/auth0-react';
 import OrganizationSidebar from "../components/OverviewPage/OrganizationSidebar";
-import PipelineAppBar from "../components/PipeLineComposer/PipelineAppBar";
 import PipelineGrid from "../components/OverviewPage/PipelineGrid";
 
-export default function UserPage() {
+const UserPage = () => {
     return (
         <div>
             <Box sx={{display: 'flex'}}>
@@ -13,3 +13,7 @@ export default function UserPage() {
         </div>
     )
 }
+
+export default withAuthenticationRequired(UserPage, {
+    onRedirecting: () => (<div>Redirecting you to the login page...</div>)
+});
