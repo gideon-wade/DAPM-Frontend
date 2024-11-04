@@ -1,10 +1,11 @@
 import { Box } from "@mui/material";
-import Flow from "../components/PipeLineComposer/Flow";
-import Sidebar from "../components/PipeLineComposer/NodesSidebar";
-
-import PipelineAppBar from "../components/PipeLineComposer/PipelineAppBar";
 import { Controls, ReactFlowProvider } from "reactflow";
 import { withAuthenticationRequired } from "@auth0/auth0-react";
+
+import Flow from "../components/PipeLineComposer/Flow";
+import Sidebar from "../components/PipeLineComposer/NodesSidebar";
+import PipelineAppBar from "../components/PipeLineComposer/PipelineAppBar";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 
 const PipelineComposer = () => {
@@ -23,5 +24,5 @@ const PipelineComposer = () => {
 }
 
 export default withAuthenticationRequired(PipelineComposer, {
-    onRedirecting: () => (<div>Redirecting you to the login page...</div>)
+    onRedirecting: () => (<LoadingSpinner />)
 });

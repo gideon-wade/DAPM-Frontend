@@ -7,11 +7,10 @@ import rootReducer from "./redux/slices";
 
 import { persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage' // defaults to localStorage for web
-import { RouterProvider, createBrowserRouter, createHashRouter } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import PipelineComposer from "./routes/PipeLineComposer";
 import UserPage from "./routes/OverviewPage";
 import { loadState, saveState } from "./redux/browser-storage";
-import LoginPage from "./components/LoginPage/LoginPage";
 
 // Configure redux-persist
 const persistConfig = {
@@ -52,14 +51,8 @@ const router = createBrowserRouter([
     path: "/pipeline",
     element: <PipelineComposer/>,
   },
-  {
-    path: "/login",
-    element: <LoginPage/>,
-  }
 ]);
 
-
-// TODO: check if auth., if not redirect to LoginPage
 export default function App() {
   return (
     <ThemeProvider theme={darkTheme}>
