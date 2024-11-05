@@ -95,6 +95,9 @@ export interface OperatorInstantiationData extends BaseInstantiationData {
 
 export interface OrganizationInstantiationData extends BaseInstantiationData {
   organization?: Organization;
+  id?: string;
+  name?: string;
+  domain?: string;
 }
 
 export interface Algorithm {

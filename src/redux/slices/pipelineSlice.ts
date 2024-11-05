@@ -18,8 +18,8 @@ const pipelineSlice = createSlice({
   name: 'pipelines',
   initialState: initialState,
   reducers: {
-    addNewPipeline: (state, { payload }: PayloadAction<{ id: string, flowData: NodeState }>) => {
-      state.pipelines.push({ id: payload.id, name: 'unnamed pipeline', pipeline: payload.flowData, history: { past: [], future: []}, imgData: '' } as PipelineData)
+    addNewPipeline: (state, { payload }: PayloadAction<{ id: string, name: string, flowData: NodeState }>) => {
+      state.pipelines.push({ id: payload.id, name: payload.name, pipeline: payload.flowData, history: { past: [], future: []}, imgData: '' } as PipelineData)
       state.activePipelineId = payload.id
     },
     setActivePipeline: (state, { payload }: PayloadAction<string>) => {

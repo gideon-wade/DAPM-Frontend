@@ -13,7 +13,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getOrganizations, getRepositories, getResources, getPipelines } from '../../redux/selectors/apiSelector';
 import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/slices/apiSlice';
@@ -59,11 +59,6 @@ const PersistentDrawerLeft: React.FC = () => {
   useEffect(() => {
     dispatch(resourceThunk({ organizations, repositories }));
   }, [repositories]);
-    if (organizations.length > 0) {
-      dispatch(repositoryThunk(organizations));
-      if (repositories.length > 0) dispatch(resourceThunk({ organizations, repositories }));
-    }
-  }, [dispatch, organizations, repositories]);
 
   // Load the pipeline
   const  [pipelines, setPipelines] = useState<Pipeline[]>([]);
@@ -81,8 +76,7 @@ const PersistentDrawerLeft: React.FC = () => {
     if (organizations.length > 0 && repositories.length > 0) {
         loadPipelines(organizations[0].id, repositories[0].id);
     }
-  
-}, []);
+  }, []);
 
 
   const handleDownload = async (resource: Resource) => {
@@ -104,12 +98,12 @@ const PersistentDrawerLeft: React.FC = () => {
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
     // addNewPipeline({id: response.result.pipelines[0].id, flowData: {edges : response.result.pipelines[0].pipeline.edges, nodes: response.result.pipelines[0].pipeline.nodes}});
 
-    addNewPipeline({id: response.result.pipelines[0].id, flowData: response.result.pipelines[0].pipeline});
-    console.log("Called addd new");
+    dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name, flowData: response.result.pipelines[0].pipeline}));
+    console.log("Called add new");
     //addNewPipeline({ id: `pipeline-${uuidv4()}`, flowData: { nodes: [], edges: [] } });
     
     // Add your logic here, e.g., navigate to a pipeline detail page
-};
+  };
   return (
     <Drawer
       PaperProps={{

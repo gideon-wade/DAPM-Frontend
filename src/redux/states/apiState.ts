@@ -10,7 +10,7 @@ export interface ApiState {
 export interface Organization {
     name: string,
     id: string
-    apiUrl: string
+    domain: string
 }
 
 export interface Repository {

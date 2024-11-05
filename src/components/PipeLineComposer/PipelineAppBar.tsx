@@ -8,7 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 
 import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
 import { updatePipelineName } from "../../redux/slices/pipelineSlice";
-import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../redux/states/pipelineState";
+import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
 import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
@@ -45,7 +45,7 @@ export default function PipelineAppBar() {
   }
 
   const flowData = useSelector(getActiveFlowData)
-
+  console.log("FlowData: ", flowData);
   // TODO: need to be tested
   const generateJson = async () => {
 
@@ -55,14 +55,14 @@ export default function PipelineAppBar() {
     });
 
     console.log("copied", edges)
-
+    
     const dataSinks = flowData?.edges.map((edge) => {
       if (edge.data?.filename) {
         const newTarget = getHandleId()
         const egeToModify = edges.find(e => e.sourceHandle == edge.sourceHandle && e.targetHandle == edge.targetHandle)
         egeToModify!.targetHandle = newTarget
-
         const originalDataSink = flowData!.nodes.find(node => node.id === edge.target) as Node<DataSinkNodeData>
+        console.log("O data: ", originalDataSink);
         return {
           type: originalDataSink?.type,
           data: {
@@ -77,7 +77,7 @@ export default function PipelineAppBar() {
               }
             }
           },
-          position: { x: 100, y: 100 },
+          position: originalDataSink?.position,
           id: getNodeId(),
           width: 100,
           height: 100,
@@ -104,9 +104,18 @@ export default function PipelineAppBar() {
                 },
               }
             },
-            width: 100, height: 100, position: { x: 100, y: 100 }, id: node.id, label: "",
+            width: 100, height: 100, position: node?.position, id: node.id, label: "",
           } as any
         }).concat(
+          flowData?.nodes?.filter(node => node.type === 'organization').map(node => node as Node<OrganizationNodeData>).map(node => {
+            return {
+              type: node.type, data: {
+                ...node.data
+              },
+              width: node?.width, height: node?.height, position: node?.position, id: node.id, label: "",
+            } as any
+          })
+        ).concat(
           flowData?.nodes?.filter(node => node.type === 'operator').map(node => node as Node<OperatorNodeData>).map(node => {
             return {
               type: node.type, data: {
@@ -120,17 +129,36 @@ export default function PipelineAppBar() {
                   }
                 }
               },
-              width: 100, height: 100, position: { x: 100, y: 100 }, id: node.id, label: "",
+              width: 100, height: 100, position: node?.position, id: node.id, label: "",
             } as any
           })
         ).concat(dataSinks),
-        edges: edges.map(edge => {
-          return { sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle }
+          edges: edges.map(edge => {
+           return { sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle }
         })
       }
     }
 
-    console.log(JSON.stringify(requestData))
+    let org = flowData?.nodes?.filter(node => node.type === 'organization').map(node => node as Node<OrganizationNodeData>).map(node => {
+            return {
+              type: node.type, data: {
+                templateData: { targetHandles: [], sourceHandles: [{ id: getHandleId(), type: "petrinet" }] },
+                instantiationData: {
+                  resource: {
+                    //...node?.data?.instantiationData.algorithm,
+                    organizationId: node?.data?.instantiationData?.organization?.id,
+                    repositoryId: node?.data?.instantiationData?.organization?.domain,
+                    name: node?.data?.instantiationData?.organization?.name,
+                  }
+                }
+              },
+              width: node?.width, height: node?.height, position: node?.position, id: node.id, label: "",
+            } as any
+          });
+
+    console.log("Org data:", org);
+
+    console.log("Request data:", requestData)
 
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
