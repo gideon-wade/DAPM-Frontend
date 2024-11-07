@@ -18,8 +18,8 @@ const pipelineSlice = createSlice({
   name: 'pipelines',
   initialState: initialState,
   reducers: {
-    addNewPipeline: (state, { payload }: PayloadAction<{ id: string, flowData: NodeState }>) => {
-      state.pipelines.push({ id: payload.id, name: 'unnamed pipeline', pipeline: payload.flowData, history: { past: [], future: []}, imgData: '' } as PipelineData)
+    addNewPipeline: (state, { payload }: PayloadAction<{ id: string, currentFolderID: string, flowData: NodeState }>) => {
+      state.pipelines.push({ id: payload.id, name: 'Unnamed Pipeline', pipeline: payload.flowData, history: { past: [], future: []}, imgData: '', isFolder: false, folderID: payload.currentFolderID} as PipelineData)
       state.activePipelineId = payload.id
     },
     setActivePipeline: (state, { payload }: PayloadAction<string>) => {
@@ -31,18 +31,38 @@ const pipelineSlice = createSlice({
       pipeline.imgData = payload.imgData
     },
     
-    removePipeline: (state, { payload }: PayloadAction<string>) => {
-      state.pipelines = state.pipelines.filter(pipeline => pipeline.id !== payload);
-      if (state.activePipelineId === payload) {
+    removePipeline: (state, { payload }: PayloadAction<{ id: string, currentFolderID: string }>) => {
+      state.pipelines.forEach(pipeline => {
+        if (pipeline.folderID === payload.id) {
+          pipeline.folderID = payload.currentFolderID;
+        }
+      });
+
+      state.pipelines = state.pipelines.filter(pipeline => pipeline.id !== payload.id);
+
+      if (state.activePipelineId === payload.id) {
         state.activePipelineId = '';
       }
     },
+
     reorderPipelines: (state, { payload }: PayloadAction<PipelineData[]>) => {
       state.pipelines = payload;
     },
 
-    // actions for undo and redo
+    addNewFolder: (state, { payload }: PayloadAction<{ id: string, currentFolderID: string, flowData: NodeState }>) => {
+      state.pipelines.push({ id: payload.id, name: 'New Folder', pipeline: payload.flowData, history: { past: [], future: []}, imgData: '', isFolder: true, folderID: payload.currentFolderID} as PipelineData)
+    },
 
+    moveCardToFolder: (state, action: PayloadAction<{ cardId: string; folderId: string }>) => {
+      const { cardId, folderId } = action.payload;
+      const cardIndex = state.pipelines.findIndex(p => p.id === cardId);
+      if (cardIndex !== -1) {
+        state.pipelines[cardIndex].folderID = folderId;
+      }
+    },
+
+    // actions for undo and redo
+    
     undo(state){
       var activePipeline = state.pipelines.find(pipeline => pipeline.id === state.activePipelineId)
       if (!activePipeline) return
@@ -206,7 +226,9 @@ export const {
   setImageData, 
   removePipeline,
   reorderPipelines,
-  
+  addNewFolder,
+  moveCardToFolder,
+
   // actions for undo and redo
   undo,
   redo,
