@@ -1,12 +1,14 @@
-import { AppBar, Box, ThemeProvider, createTheme } from "@mui/material";
+import { Box } from "@mui/material";
+import { Controls, ReactFlowProvider } from "reactflow";
+import { withAuthenticationRequired } from "@auth0/auth0-react";
+
 import Flow from "../components/PipeLineComposer/Flow";
 import Sidebar from "../components/PipeLineComposer/NodesSidebar";
-
 import PipelineAppBar from "../components/PipeLineComposer/PipelineAppBar";
-import { Controls, Position, ReactFlowProvider } from "reactflow";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 
-export default function PipelineComposer(){
+const PipelineComposer = () => {
     return (
         <ReactFlowProvider>
             <Flow />
@@ -20,3 +22,7 @@ export default function PipelineComposer(){
         </ReactFlowProvider>
     )
 }
+
+export default withAuthenticationRequired(PipelineComposer, {
+    onRedirecting: () => (<LoadingSpinner />)
+});
