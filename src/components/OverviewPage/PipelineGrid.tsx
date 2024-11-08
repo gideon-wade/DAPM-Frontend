@@ -16,6 +16,7 @@ import { getNodesBounds, getViewportForBounds } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import LogoutButton from './Buttons/LogoutButton';
 
 interface DraggableGridItemProps {
   id: string;
@@ -108,6 +109,7 @@ export default function AutoGrid() {
         sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginBlockStart: "10px" }}>
         Create New
       </Button>
+      <LogoutButton/>
       <DndProvider backend={HTML5Backend}>
         <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: '10px' }}>
           {pipelines.map(({ id, name, imgData }, index) => (

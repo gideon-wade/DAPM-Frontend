@@ -12,9 +12,9 @@ const UserPage = () => {
     return (
         <div>
             <Box sx={{display: 'flex'}}>
-                <p>e-mail: {user?.email}</p> <br/>
-                {/*<OrganizationSidebar />*/}
-                {/*<PipelineGrid />*/}
+                {/*<p>e-mail: {user?.email}</p> <br/>*/}
+                {<OrganizationSidebar />}
+                {<PipelineGrid />}
             </Box>
         </div>
     )
