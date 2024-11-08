@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { styled } from '@mui/material/styles';
+import React, {useState, useEffect} from 'react';
+import {styled} from '@mui/material/styles';
 import {
   Drawer,
   List,
@@ -12,22 +12,34 @@ import {
   Collapse,
   IconButton,
 } from '@mui/material';
-import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
-import { getOrganizations, getRepositories, getResources } from '../../redux/selectors/apiSelector';
-import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/slices/apiSlice';
-import { Organization, Repository, Resource } from '../../redux/states/apiState';
-import { useAppDispatch, useAppSelector } from '../../hooks';
+import {ExpandMore, ExpandLess} from '@mui/icons-material';
+import {useSelector} from 'react-redux';
+import {getOrganizations, getRepositories, getResources} from '../../redux/selectors/apiSelector';
+import {organizationThunk, repositoryThunk, resourceThunk} from '../../redux/slices/apiSlice';
+import {Organization, Repository, Resource} from '../../redux/states/apiState';
+import {useAppDispatch, useAppSelector} from '../../hooks';
 import ResourceUploadButton from './Buttons/ResourceUploadButton';
-import { downloadResource, fetchOrganisation, fetchOrganisationRepositories, fetchOrganisations, fetchPipeline, fetchRepositoryPipelines, fetchRepositoryResources, fetchResource, putPipeline, putRepository } from '../../services/backendAPI';
+import {
+  downloadResource,
+  fetchOrganisation,
+  fetchOrganisationRepositories,
+  fetchOrganisations,
+  fetchPipeline,
+  fetchRepositoryPipelines,
+  fetchRepositoryResources,
+  fetchResource,
+  putPipeline,
+  putRepository
+} from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
 import OperatorUploadButton from './Buttons/OperatorUploadButton';
-import { Padding } from '@mui/icons-material';
+import ResourceList from './ResourceList';
+import {Padding} from '@mui/icons-material';
 
 const drawerWidth = 240;
 
-const DrawerHeader = styled('div')(({ theme }) => ({
+const DrawerHeader = styled('div')(({theme}) => ({
   display: 'flex',
   alignItems: 'center',
   padding: theme.spacing(0, 1),
@@ -50,7 +62,7 @@ const PersistentDrawerLeft: React.FC = () => {
     dispatch(repositoryThunk(organizations));
   }, [organizations]);
   useEffect(() => {
-    dispatch(resourceThunk({ organizations, repositories }));
+    dispatch(resourceThunk({organizations, repositories}));
   }, [repositories]);
 
   const handleDownload = async (resource: Resource) => {
@@ -63,7 +75,7 @@ const PersistentDrawerLeft: React.FC = () => {
   };
 
   const handleToggle = (orgId: string) => {
-    setOpenOrgs(prev => ({ ...prev, [orgId]: !prev[orgId] }));
+    setOpenOrgs(prev => ({...prev, [orgId]: !prev[orgId]}));
   };
 
   return (
@@ -85,24 +97,24 @@ const PersistentDrawerLeft: React.FC = () => {
       variant="permanent"
       anchor="left"
     >
-      <Divider />
+      <Divider/>
       <DrawerHeader>
-        <Typography sx={{ width: '100%', textAlign: 'center' }} variant="h6" noWrap component="div">
+        <Typography sx={{width: '100%', textAlign: 'center'}} variant="h6" noWrap component="div">
           Organisations
         </Typography>
-        <AddOrganizationButton />
+        <AddOrganizationButton/>
       </DrawerHeader>
       <List>
         {organizations.map((organization) => (
           <React.Fragment key={organization.id}>
-            <ListItem sx={{ justifyContent: 'space-between' }} disablePadding>
+            <ListItem sx={{justifyContent: 'space-between'}} disablePadding>
               <ListItemButton onClick={() => handleToggle(organization.id)}>
-                <ListItemText 
-                  primary={organization.name} 
-                  primaryTypographyProps={{ style: { fontSize: '25px', marginBlock: '0rem' } }} 
+                <ListItemText
+                  primary={organization.name}
+                  primaryTypographyProps={{style: {fontSize: '25px', marginBlock: '0rem'}}}
                 />
                 <IconButton edge="end">
-                  {openOrgs[organization.id] ? <ExpandLess /> : <ExpandMore />}
+                  {openOrgs[organization.id] ? <ExpandLess/> : <ExpandMore/>}
                 </IconButton>
               </ListItemButton>
             </ListItem>
@@ -112,61 +124,41 @@ const PersistentDrawerLeft: React.FC = () => {
                   repository.organizationId === organization.id && (
                     <React.Fragment key={repository.id}>
                       <ListItem sx={{paddingInline: '5px'}}>
-                        <ListItemText 
-                          primary={repository.name} 
-                          primaryTypographyProps={{ style: { fontSize: '25px', marginBlock: '10px' } }} 
+                        <ListItemText
+                          primary={repository.name}
+                          primaryTypographyProps={{
+                            style: {
+                              fontSize: '25px',
+                              marginBlock: '10px'
+                            }
+                          }}
                         />
                       </ListItem>
 
-                      <ListItem>
-                        <ListItemText 
-                          primary="Resources" 
-                          primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
-                        />
-                        <Box sx={{ marginLeft: 'auto' }}>
-                          <ResourceUploadButton orgId={repository.organizationId} repId={repository.id} />
-                        </Box>
-                      </ListItem>
-                      {resources.map((resource) => (
-                        resource.repositoryId === repository.id && resource.type !== "operator" && (
-                          <ListItem key={resource.id} disablePadding>
-                            <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handleDownload(resource)}>
-                              <ListItemText 
-                                secondary={resource.name} 
-                                secondaryTypographyProps={{ fontSize: "0.8rem" }} 
-                              />
-                            </ListItemButton>
-                          </ListItem>
-                        )
-                      ))}
+                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                    listName={"Eventlog"} typeName={"eventLog"}></ResourceList>
 
-                      <ListItem>
-                        <ListItemText 
-                          primary="Operators" 
-                          primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
-                        />
-                        <Box sx={{ marginLeft: 'auto' }}>
-                          <OperatorUploadButton orgId={repository.organizationId} repId={repository.id} />
-                        </Box>
-                      </ListItem>
-                      {resources.map((resource) => (
-                        resource.repositoryId === repository.id && resource.type === "operator" && (
-                          <ListItem key={resource.id} disablePadding>
-                            <ListItemButton sx={{ paddingBlock: 0 }}>
-                              <ListItemText 
-                                secondary={resource.name} 
-                                secondaryTypographyProps={{ fontSize: "0.8rem" }} 
-                              />
-                            </ListItemButton>
-                          </ListItem>
-                        )
-                      ))}
+                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                    listName={"BPMN Models"} typeName={"bpmnModel"}></ResourceList>
+
+                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                    listName={"Petri Nets"} typeName={"petriNet"}></ResourceList>
+
+                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                    listName={"Operators"} typeName={"operator"}></ResourceList>
+
                     </React.Fragment>
                   )
                 ))}
-                <ListItem sx={{ justifyContent: 'center' }}>
-                  <Box sx={{ width: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                    <CreateRepositoryButton orgId={organization.id} />
+                <ListItem sx={{justifyContent: 'center'}}>
+                  <Box sx={{
+                    width: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <CreateRepositoryButton orgId={organization.id}/>
                   </Box>
                 </ListItem>
               </List>
