@@ -22,6 +22,8 @@ export interface PipelineData {
     pipeline: NodeState;
     imgData: string;
     history: HistoryData;
+    isFolder: boolean;
+    folderID: string;
 }
 
 export interface NodeState {

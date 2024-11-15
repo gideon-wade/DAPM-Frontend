@@ -1,15 +1,25 @@
 import { Box } from "@mui/material";
-import OrganizationSidebar from "../components/OverviewPage/OrganizationSidebar";
-import PipelineAppBar from "../components/PipeLineComposer/PipelineAppBar";
-import PipelineGrid from "../components/OverviewPage/PipelineGrid";
+import { useAuth0, withAuthenticationRequired } from '@auth0/auth0-react';
 
-export default function UserPage() {
+import OrganizationSidebar from "../components/OverviewPage/OrganizationSidebar";
+import PipelineGrid from "../components/OverviewPage/PipelineGrid";
+import LoadingSpinner from "../components/LoadingSpinner";
+
+// TODO: logout button somewhere
+const UserPage = () => {
+    const { user } = useAuth0();
+
     return (
         <div>
             <Box sx={{display: 'flex'}}>
-                <OrganizationSidebar />
-                <PipelineGrid />
+                {/*<p>e-mail: {user?.email}</p> <br/>*/}
+                {<OrganizationSidebar />}
+                {<PipelineGrid />}
             </Box>
         </div>
     )
 }
+
+export default withAuthenticationRequired(UserPage, {
+    onRedirecting: () => (<LoadingSpinner />)
+});

@@ -40,6 +40,20 @@ const post = async (endpoint: string, body?: any) => {
         console.error(`Error posting data to ${endpoint}: `, e);
     }
 };
+const del = async (endpoint: string) => {
+    console.log("Calling delete endpoint", `http://${path}${endpoint}`);
+    try {
+        const response = await fetch(`http://${path}${endpoint}/`, {
+            method: "DELETE",
+        });
+        if (!response.ok) return;
+        let json = await response.json();
+        console.log("Response json: ", json);
+        return json;
+    } catch (e) {
+        console.error(`Error posting data to ${endpoint}: `, e);
+    }
+};
 
 // Fetch additional data recursively
 const getData = async (ticketId: string): Promise<any> => {
@@ -173,6 +187,12 @@ export async function putCommandStart(orgId: string, repId: string, pipeId: stri
     let response = await post(`/Organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}/executions/${exeId}/commands/start`);
     return response;//await getData(response.ticketId);
 }
+export async function deleteRepository(orgId: string, repId: string) {
+    let response = await del(`/Organizations/${orgId}/repositories/${repId}`);
+    return await getData(response.ticketId);
+}
+
+
 
 export async function putOperator(orgId: string, repId: string, formData: FormData) {
     try {
