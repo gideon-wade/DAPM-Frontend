@@ -131,11 +131,36 @@ export default function AutoGrid() {
 
 
   return (
-    <Box sx={{ flexGrow: 1, flexBasis: "100%" }} >
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => createNewPipeline()}
-        sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginBlockStart: "10px" }}>
-        Create New
+    <Box sx={{ flexGrow: 1, flexBasis: "100%" }}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
+      <Button
+        variant="contained"
+        startIcon={<ArrowBackIcon />}
+        onClick={goToParentFolder}
+        disabled={currentFolderID === ''}
+        sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
+      >
+        Back
       </Button>
+      <Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={createNewPipeline}
+          sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginRight: '10px' }}
+        >
+          Create Pipeline
+        </Button>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={createNewFolder}
+          sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
+        >
+          Create Folder
+        </Button>
+      </Box>
+    </Box>
       <DndProvider backend={HTML5Backend}>
         <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: '10px' }}>
           {filteredPipelines.map(({ id, name, imgData, isFolder, folderID}, index) => (
