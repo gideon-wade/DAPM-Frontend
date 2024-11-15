@@ -29,13 +29,15 @@ import {
   fetchRepositoryResources,
   fetchResource,
   putPipeline,
-  putRepository
+  putRepository,
+  deleteRepository
 } from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
 import OperatorUploadButton from './Buttons/OperatorUploadButton';
 import ResourceList from './ResourceList';
 import {Padding} from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const drawerWidth = 240;
 
@@ -76,6 +78,15 @@ const PersistentDrawerLeft: React.FC = () => {
 
   const handleToggle = (orgId: string) => {
     setOpenOrgs(prev => ({...prev, [orgId]: !prev[orgId]}));
+  };
+  const handleDeleteRepository = async (organizationId: string, repositoryId: string) => {
+    try {
+      const result = await deleteRepository(organizationId, repositoryId);
+      console.log("Repository deleted successfully:", result);
+      dispatch(repositoryThunk(organizations));  // Reload repositories after deletion
+    } catch (error) {
+      console.error("Error deleting repository:", error);
+    }
   };
 
   return (
@@ -133,6 +144,15 @@ const PersistentDrawerLeft: React.FC = () => {
                             }
                           }}
                         />
+                        <IconButton
+                          aria-label="delete"
+                          onClick={() => handleDeleteRepository(organization.id, repository.id)}
+                          sx={{
+                            color: '#96281b'
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
                       </ListItem>
 
                       <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
