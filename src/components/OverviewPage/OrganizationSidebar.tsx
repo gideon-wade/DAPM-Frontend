@@ -11,6 +11,14 @@ import {
   Box,
   Collapse,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import {ExpandMore, ExpandLess} from '@mui/icons-material';
 import {useSelector} from 'react-redux';
@@ -56,6 +64,13 @@ const PersistentDrawerLeft: React.FC = () => {
   const resources: Resource[] = useSelector(getResources);
 
   const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedRepository, setSelectedRepository] = useState<Repository | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+
 
   useEffect(() => {
     dispatch(organizationThunk());
@@ -79,14 +94,34 @@ const PersistentDrawerLeft: React.FC = () => {
   const handleToggle = (orgId: string) => {
     setOpenOrgs(prev => ({...prev, [orgId]: !prev[orgId]}));
   };
-  const handleDeleteRepository = async (organizationId: string, repositoryId: string) => {
+  const openDeleteDialog = (repository: Repository) => {
+    setSelectedRepository(repository);
+    setDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSelectedRepository(null);
+  };
+
+  const handleDeleteRepository = async () => {
+    if (!selectedRepository) return;
+    setLoading(true);
     try {
-      const result = await deleteRepository(organizationId, repositoryId);
-      console.log("Repository deleted successfully:", result);
-      dispatch(repositoryThunk(organizations));  // Reload repositories after deletion
+      await deleteRepository(selectedRepository.organizationId, selectedRepository.id);
+      console.log("Repository deleted successfully");
+      dispatch(repositoryThunk(organizations)); // Reload repositories after deletion
+      setSuccessMessage(`Repository ${selectedRepository.name} deleted successfully!`);
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error("Error deleting repository:", error);
+    } finally {
+      setLoading(false);
+      closeDeleteDialog();
     }
+  };
+  const handleCloseSuccessDialog = () => {
+    setShowSuccessDialog(false);
   };
 
   return (
@@ -146,7 +181,7 @@ const PersistentDrawerLeft: React.FC = () => {
                         />
                         <IconButton
                           aria-label="delete"
-                          onClick={() => handleDeleteRepository(organization.id, repository.id)}
+                          onClick={() => openDeleteDialog(repository)}
                           sx={{
                             color: '#96281b'
                           }}
@@ -182,6 +217,45 @@ const PersistentDrawerLeft: React.FC = () => {
                   </Box>
                 </ListItem>
               </List>
+              <Dialog
+                open={deleteDialogOpen}
+                onClose={closeDeleteDialog}
+              >
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Are you sure you want to delete {selectedRepository?.name}?
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={closeDeleteDialog} color="primary">
+                    No
+                  </Button>
+                  <Button onClick={handleDeleteRepository} color="primary" disabled={loading} autoFocus>
+                    {loading ? <CircularProgress size={24} /> : "Yes"}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+              <Dialog
+                open={showSuccessDialog}
+                onClose={handleCloseSuccessDialog}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+              >
+                <DialogTitle id="alert-dialog-title">
+                  {"Success"}
+                </DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    {successMessage}
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleCloseSuccessDialog} autoFocus>
+                    OK
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </Collapse>
           </React.Fragment>
         ))}
