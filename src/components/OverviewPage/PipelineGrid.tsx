@@ -160,6 +160,7 @@ export default function AutoGrid() {
           Create Folder
         </Button>
       </Box>
+      <LogoutButton/>
     </Box>
       <DndProvider backend={HTML5Backend}>
         <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: '10px' }}>
