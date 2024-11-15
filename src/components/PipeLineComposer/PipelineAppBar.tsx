@@ -184,10 +184,13 @@ export default function PipelineAppBar() {
       delete node.selected;
       delete node.dragging;
     });
+    if (flowClone) {
+      flowClone.timestamp = Math.floor(Date.now() / 1000);
+    }
     const requestData = {
       name: pipelineName,
       pipeline: flowClone,
-      timeStamp : Date.now()
+      timestamp: flowClone?.timestamp
     };
     const pipeline = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
     console.log("Saved Pipeline", pipeline)

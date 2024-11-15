@@ -50,7 +50,7 @@ export default function AutoGrid() {
   const pipelines = useSelector(getPipelines)
 
   const createNewPipeline = () => {
-    dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, name: "unnamed pipeline", flowData: { nodes: [], edges: [] } }));
+    dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, name: "unnamed pipeline", flowData: { nodes: [], edges: [], timestamp: Math.floor(Date.now() / 1000) } }));
     { navigate("/pipeline") }
   }
   const handleDeletePipeline = (id: string) => {

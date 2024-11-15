@@ -212,7 +212,7 @@ const PersistentDrawerLeft: React.FC = () => {
               pipelines
               .reduce((map, pipeline) => {
                 console.log("Checking pipeline: ", pipeline);
-                /*
+                
                 if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
                   return map;
                 }
@@ -221,9 +221,7 @@ const PersistentDrawerLeft: React.FC = () => {
                   map.set(pipeline.name, pipeline);
                 }
                 return map;
-                */
-                map.set(pipeline.name, pipeline);
-                return map;
+                
               }, new Map())
               .values() // Extract only the values (newest pipelines) from the map
             )
@@ -233,7 +231,7 @@ const PersistentDrawerLeft: React.FC = () => {
                     <ListItem key={pipeline.id} disablePadding>
                         <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
                           <ListItemText 
-                            secondary={pipeline.name + " " + pipeline.timestamp}
+                            secondary={pipeline.name}
                             secondaryTypographyProps={{ fontSize: "0.8rem" }} 
                           />
                         </ListItemButton>
