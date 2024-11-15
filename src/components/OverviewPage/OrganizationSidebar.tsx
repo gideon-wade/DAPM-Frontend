@@ -43,6 +43,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ResourceList from './ResourceList';
 import { addNewPipeline } from '../../redux/slices/pipelineSlice';
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
+import { NodeState } from '../../redux/states/pipelineState';
 
 
 
@@ -122,7 +123,7 @@ const PersistentDrawerLeft: React.FC = () => {
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
     // addNewPipeline({id: response.result.pipelines[0].id, flowData: {edges : response.result.pipelines[0].pipeline.edges, nodes: response.result.pipelines[0].pipeline.nodes}});
     console.log("Adding pipeline:", response.result.pipelines[0].pipeline);
-    let result = dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name, flowData: response.result.pipelines[0].pipeline}));
+    let result = dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name as string, currentFolderID: "a", flowData: response.result.pipelines[0].pipeline as NodeState}));
     console.log("Called add new, and got", result);
     //addNewPipeline({ id: `pipeline-${uuidv4()}`, flowData: { nodes: [], edges: [] } });
     
