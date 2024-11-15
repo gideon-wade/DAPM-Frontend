@@ -20,12 +20,14 @@ import {
   CircularProgress,
   Snackbar,
 } from '@mui/material';
-import {ExpandMore, ExpandLess} from '@mui/icons-material';
-import {useSelector} from 'react-redux';
-import {getOrganizations, getRepositories, getResources} from '../../redux/selectors/apiSelector';
-import {organizationThunk, repositoryThunk, resourceThunk} from '../../redux/slices/apiSlice';
-import {Organization, Repository, Resource} from '../../redux/states/apiState';
-import {useAppDispatch, useAppSelector} from '../../hooks';
+import { ExpandMore, ExpandLess } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { getOrganizations, getRepositories, getResources, getPipelines } from '../../redux/selectors/apiSelector';
+import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/slices/apiSlice';
+import { Organization, Pipeline, Repository, Resource } from '../../redux/states/apiState';
+import { useAppDispatch, useAppSelector } from '../../hooks';
+import { v4 as uuidv4 } from 'uuid';
 import ResourceUploadButton from './Buttons/ResourceUploadButton';
 import {
   downloadResource,
@@ -43,9 +45,15 @@ import {
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
 import OperatorUploadButton from './Buttons/OperatorUploadButton';
-import ResourceList from './ResourceList';
-import {Padding} from '@mui/icons-material';
+import { Padding } from '@mui/icons-material';
+import { json } from 'stream/consumers';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ResourceList from './ResourceList';
+import { addNewPipeline } from '../../redux/slices/pipelineSlice';
+import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
+import { NodeState } from '../../redux/states/pipelineState';
+
+
 
 const drawerWidth = 240;
 
@@ -62,6 +70,7 @@ const PersistentDrawerLeft: React.FC = () => {
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
   const resources: Resource[] = useSelector(getResources);
+  // const pipelines : Pipeline[] = useSelector(getPipelines);
 
   const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -81,6 +90,23 @@ const PersistentDrawerLeft: React.FC = () => {
   useEffect(() => {
     dispatch(resourceThunk({organizations, repositories}));
   }, [repositories]);
+
+  // Load the pipeline
+  const  [pipelines, setPipelines] = useState<Pipeline[]>([]);
+  useEffect(() => {
+    async function loadPipelines(orgid: string, repid: string) {
+        const jsonPipelineData = await fetchRepositoryPipelines(orgid, repid);
+        // convert to array of pipelines
+        // const pipelines = Object.keys(jsonPipelineData).map((key) => jsonPipelineData[key]);
+        const pipelines = jsonPipelineData.result.pipelines
+
+        setPipelines(pipelines);
+    }
+    if (organizations.length > 0 && repositories.length > 0) {
+        loadPipelines(organizations[0].id, repositories[0].id);
+    }
+  }, []);
+
 
   const handleDownload = async (resource: Resource) => {
     const response = await downloadResource(resource.organizationId, resource.repositoryId, resource.id);
@@ -124,6 +150,14 @@ const PersistentDrawerLeft: React.FC = () => {
     setShowSuccessDialog(false);
   };
 
+  const handlePipelineClick = async (pipeline: Pipeline) => {
+    console.log('Pipeline clicked:', pipeline);
+    
+    const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
+    
+    dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name as string, currentFolderID: "a", flowData: response.result.pipelines[0].pipeline as NodeState}));
+    // Add your logic here, e.g., navigate to a pipeline detail page
+  };
   return (
     <Drawer
       PaperProps={{
@@ -192,6 +226,42 @@ const PersistentDrawerLeft: React.FC = () => {
 
                       <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
                                     listName={"Eventlog"} typeName={"eventLog"}></ResourceList>
+                    
+            <ListItem>
+                <ListItemText 
+                    primary="Saved Pipelines" 
+                    primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
+                />
+            </ListItem>
+            {Array.isArray(pipelines) && Array.from(
+              pipelines
+              .reduce((map, pipeline) => {
+                
+                if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
+                  return map;
+                }
+
+                if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
+                  map.set(pipeline.name, pipeline);
+                }
+                return map;
+                
+              }, new Map())
+              .values() // Extract only the values (newest pipelines) from the map
+            )
+            .filter((pipeline) => pipeline.repositoryId === repository.id) // Filter by repository ID
+            .map((pipeline) => (
+                pipeline.repositoryId === repository.id && (
+                    <ListItem key={pipeline.id} disablePadding>
+                        <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
+                          <ListItemText 
+                            secondary={pipeline.name}
+                            secondaryTypographyProps={{ fontSize: "0.8rem" }} 
+                          />
+                        </ListItemButton>
+                    </ListItem>
+                    )
+            ))}
 
                       <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
                                     listName={"BPMN Models"} typeName={"bpmnModel"}></ResourceList>

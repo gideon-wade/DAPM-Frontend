@@ -6,10 +6,10 @@ import { AppBar, Box, Button, TextField, Toolbar, Typography } from "@mui/materi
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
 
-import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
+import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
 import { updatePipelineName } from "../../redux/slices/pipelineSlice";
-import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData } from "../../redux/states/pipelineState";
-import { putCommandStart, putExecution, putPipeline, executionStatus } from "../../services/backendAPI";
+import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
+import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
 
@@ -18,6 +18,7 @@ export default function PipelineAppBar() {
   const dispatch = useDispatch();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   const STATUS = {
     UNDEPLOYED: "Undeployed",
@@ -40,20 +41,21 @@ export default function PipelineAppBar() {
   const pipelineName = useSelector(getActivePipeline)?.name
 
   const setPipelineName = (name: string) => {
+    if (name.includes('/')) { 
+      alert("The name cannot contain '/'");
+      return;
+    }
+
     dispatch(updatePipelineName(name))
   }
 
   const flowData = useSelector(getActiveFlowData)
-
-  // TODO: need to be tested
+  console.log("FlowData: ", flowData);
+  
   const generateJson = async () => {
-
-    setStatus(STATUS.DEPLOYED);
-    const edges = flowData!.edges.map(edge => {
-      return {sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle}
-    });
-
-    console.log("copied", edges)
+    var edges = flowData!.edges.map(edge => {
+      return { sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle }
+    })
 
     const dataSinks = flowData?.edges.map((edge) => {
       if (edge.data?.filename) {
@@ -83,8 +85,6 @@ export default function PipelineAppBar() {
         }
       }
     }).filter(node => node !== undefined) as any
-
-    console.log(JSON.stringify(dataSinks))
 
     const requestData = {
       name: pipelineName,
@@ -126,10 +126,12 @@ export default function PipelineAppBar() {
         edges: edges.map(edge => {
           return { sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle }
         })
-      }
+      },
+      
+   
     }
-
-    console.log(JSON.stringify(requestData))
+    
+    console.log("requestdata",JSON.stringify(requestData))
 
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
@@ -137,8 +139,42 @@ export default function PipelineAppBar() {
     const pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
     const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
     await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
-    await executionStatus(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
-    setStatus(STATUS.FINISHED);
+
+  }
+
+  const getPipelines = async () => {
+    const selectedOrg = organizations[0]
+    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
+
+    const response = await fetchRepositoryPipelines(selectedOrg.id, selectedRepo.id)
+  }
+  const getAPipeline = async (pipelineId: string) => {
+    const selectedOrg = organizations[0]
+    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
+
+    const response = await fetchPipeline(selectedOrg.id, selectedRepo.id, pipelineId)
+  }
+
+  const savePipeline = async () => {
+
+    const selectedOrg = organizations[0]
+    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
+
+    let flowClone = structuredClone(flowData);
+
+    flowClone?.nodes?.forEach((node: Node) => {
+      delete node.selected;
+      delete node.dragging;
+    });
+    if (flowClone) {
+      flowClone.timestamp = Math.floor(Date.now() / 1000);
+    }
+    const requestData = {
+      name: pipelineName,
+      pipeline: flowClone,
+      timestamp: flowClone?.timestamp
+    };
+    const pipeline = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
   }
 
   return (
@@ -166,9 +202,17 @@ export default function PipelineAppBar() {
         <Typography variant="body1" sx={{ color: "white" }}>
           Status: {status}
         </Typography>
-        <Button onClick={() => status != STATUS.DEPLOYED ? generateJson() : alert("Pipeline is already deployed")}>
+        <Button onClick={() => savePipeline()}>
+          <Typography variant="body1" sx={{ color: "white" }}>Save pipeline</Typography>
+        </Button>
+        
+        <Button onClick={() => status != STATUS.DEPLOYED ? generateJson() : generateJson()}>
           <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
         </Button>
+       
+       
+        
+        
       </Toolbar>
     </AppBar>
   )

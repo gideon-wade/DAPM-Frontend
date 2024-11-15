@@ -7,7 +7,8 @@ import { NoAssociatedRepositoriesToOrganizationsError, NoCurrentOrganizationsErr
 export const initialState: ApiState = {
     organizations: [],
     repositories: [],
-    resources: []
+    resources: [],
+    pipelines: []
   }
 
 const apiSlice = createSlice({
@@ -113,3 +114,4 @@ export const resourceThunk = createAsyncThunk<
     return thunkAPI.rejectWithValue(error); // Handle error
   }
 });
+

@@ -56,7 +56,7 @@ export default function AutoGrid() {
   const [currentFolderID, setCurrentFolderID] = useState('');
 
   const createNewPipeline = () => {
-    dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, currentFolderID, flowData: { nodes: [], edges: [] } }));
+    dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, currentFolderID, name: "unnamed pipeline", flowData: { nodes: [], edges: [] } }));
     { navigate("/pipeline") }
   }
   const createNewFolder = () => {
@@ -108,7 +108,6 @@ export default function AutoGrid() {
       () => {
         const width = 800
         const height = 600
-
         const nodesBounds = getNodesBounds(nodes!);
         const { x, y, zoom } = getViewportForBounds(nodesBounds, width, height, 0.5, 2, 1);
 

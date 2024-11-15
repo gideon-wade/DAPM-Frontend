@@ -27,8 +27,9 @@ export interface PipelineData {
 }
 
 export interface NodeState {
-  nodes: Node<NodeData>[],
-  edges: Edge<EdgeData>[],
+  nodes: Node<NodeData>[];
+  edges: Edge<EdgeData>[];
+  timestamp?: number;
 }
 
 export interface EdgeData {
@@ -37,6 +38,8 @@ export interface EdgeData {
 
 export interface NodeData {
   label: string;
+  width: number;
+  height: number;
   templateData: BaseTemplateData;
   instantiationData: BaseInstantiationData;
 }
@@ -97,6 +100,9 @@ export interface OperatorInstantiationData extends BaseInstantiationData {
 
 export interface OrganizationInstantiationData extends BaseInstantiationData {
   organization?: Organization;
+  id?: string;
+  name?: string;
+  domain?: string;
 }
 
 export interface Algorithm {
