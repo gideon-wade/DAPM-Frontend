@@ -85,9 +85,7 @@ const PersistentDrawerLeft: React.FC = () => {
         // const pipelines = Object.keys(jsonPipelineData).map((key) => jsonPipelineData[key]);
         const pipelines = jsonPipelineData.result.pipelines
 
-        // const pipelines = await fetchRepositoryPipelines(orgid, repid);
         setPipelines(pipelines);
-        console.log("pipe in that weird function : ", pipelines)
     }
     if (organizations.length > 0 && repositories.length > 0) {
         loadPipelines(organizations[0].id, repositories[0].id);
@@ -121,12 +119,8 @@ const PersistentDrawerLeft: React.FC = () => {
     console.log('Pipeline clicked:', pipeline);
     
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
-    // addNewPipeline({id: response.result.pipelines[0].id, flowData: {edges : response.result.pipelines[0].pipeline.edges, nodes: response.result.pipelines[0].pipeline.nodes}});
-    console.log("Adding pipeline:", response.result.pipelines[0].pipeline);
-    let result = dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name as string, currentFolderID: "a", flowData: response.result.pipelines[0].pipeline as NodeState}));
-    console.log("Called add new, and got", result);
-    //addNewPipeline({ id: `pipeline-${uuidv4()}`, flowData: { nodes: [], edges: [] } });
     
+    dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name as string, currentFolderID: "a", flowData: response.result.pipelines[0].pipeline as NodeState}));
     // Add your logic here, e.g., navigate to a pipeline detail page
   };
   return (
@@ -207,7 +201,6 @@ const PersistentDrawerLeft: React.FC = () => {
             {Array.isArray(pipelines) && Array.from(
               pipelines
               .reduce((map, pipeline) => {
-                console.log("Checking pipeline: ", pipeline);
                 
                 if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
                   return map;

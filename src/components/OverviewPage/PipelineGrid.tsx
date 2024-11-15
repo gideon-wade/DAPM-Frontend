@@ -57,7 +57,6 @@ export default function AutoGrid() {
 
   const createNewPipeline = () => {
     dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, currentFolderID, name: "unnamed pipeline", flowData: { nodes: [], edges: [] } }));
-    // dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, currentFolderID, flowData: { nodes: [], edges: [] } }));
     { navigate("/pipeline") }
   }
   const createNewFolder = () => {
@@ -109,9 +108,7 @@ export default function AutoGrid() {
       () => {
         const width = 800
         const height = 600
-        console.log("id", pipelineId, "nodes in render:", nodes);
         const nodesBounds = getNodesBounds(nodes!);
-        console.log("NodeBounds", nodesBounds);
         const { x, y, zoom } = getViewportForBounds(nodesBounds, width, height, 0.5, 2, 1);
 
         toPng(document.querySelector(`#${pipelineId} .react-flow__viewport`) as HTMLElement, {

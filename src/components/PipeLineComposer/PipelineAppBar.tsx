@@ -53,14 +53,9 @@ export default function PipelineAppBar() {
   console.log("FlowData: ", flowData);
   
   const generateJson = async () => {
-
-    //console.log(flowData)
-
     var edges = flowData!.edges.map(edge => {
       return { sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle }
     })
-
-    console.log("copied", edges)
 
     const dataSinks = flowData?.edges.map((edge) => {
       if (edge.data?.filename) {
@@ -90,8 +85,6 @@ export default function PipelineAppBar() {
         }
       }
     }).filter(node => node !== undefined) as any
-
-    console.log(JSON.stringify(dataSinks))
 
     const requestData = {
       name: pipelineName,
@@ -153,21 +146,13 @@ export default function PipelineAppBar() {
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
-    console.log("selectedOrg", selectedOrg)
-    console.log("selectedRepo", selectedRepo)
-
     const response = await fetchRepositoryPipelines(selectedOrg.id, selectedRepo.id)
-    console.log("response", response)
   }
   const getAPipeline = async (pipelineId: string) => {
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
-    console.log("selectedOrg", selectedOrg)
-    console.log("selectedRepo", selectedRepo)
-
     const response = await fetchPipeline(selectedOrg.id, selectedRepo.id, pipelineId)
-    console.log("response", response)
   }
 
   const savePipeline = async () => {
@@ -175,9 +160,6 @@ export default function PipelineAppBar() {
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
-    console.log("selectedOrg", selectedOrg)
-    console.log("selectedRepo", selectedRepo)
-    
     let flowClone = structuredClone(flowData);
 
     flowClone?.nodes?.forEach((node: Node) => {
@@ -193,7 +175,6 @@ export default function PipelineAppBar() {
       timestamp: flowClone?.timestamp
     };
     const pipeline = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
-    console.log("Saved Pipeline", pipeline)
   }
 
   return (
