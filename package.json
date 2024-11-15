@@ -5,6 +5,7 @@
   "homepage": "https://baracklaci.github.io/",
   "main": "/",
   "dependencies": {
+    "@auth0/auth0-react": "^2.2.4",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.13",
@@ -18,6 +19,7 @@
     "@types/react": "^18.2.65",
     "@types/react-dom": "^18.2.22",
     "@types/uuid": "^9.0.8",
+    "dotenv": "^16.4.5",
     "html-to-image": "^1.11.11",
     "html2canvas": "^1.4.1",
     "react": "^18.2.0",
