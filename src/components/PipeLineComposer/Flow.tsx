@@ -178,6 +178,8 @@ const BasicFlow = () => {
           label: `${data}`,
           templateData: handleSetup.get(algorithmType)!,
           instantiationData: {},
+          width: 400,
+          height: 200,
         },
       };
 

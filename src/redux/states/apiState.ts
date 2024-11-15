@@ -33,5 +33,6 @@ export interface Pipeline {
     id: string,
     name: string,
     organizationId: string,
-    repositoryId: string
+    repositoryId: string,
+    timestamp: number
 }

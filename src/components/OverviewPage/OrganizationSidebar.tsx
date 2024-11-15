@@ -28,6 +28,7 @@ import OperatorUploadButton from './Buttons/OperatorUploadButton';
 import { Padding } from '@mui/icons-material';
 import { json } from 'stream/consumers';
 import { addNewPipeline } from '../../redux/slices/pipelineSlice';
+import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 
 
 
@@ -97,9 +98,9 @@ const PersistentDrawerLeft: React.FC = () => {
     
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
     // addNewPipeline({id: response.result.pipelines[0].id, flowData: {edges : response.result.pipelines[0].pipeline.edges, nodes: response.result.pipelines[0].pipeline.nodes}});
-
-    dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name, flowData: response.result.pipelines[0].pipeline}));
-    console.log("Called add new");
+    console.log("Adding pipeline:", response.result.pipelines[0].pipeline);
+    let result = dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name, flowData: response.result.pipelines[0].pipeline}));
+    console.log("Called add new, and got", result);
     //addNewPipeline({ id: `pipeline-${uuidv4()}`, flowData: { nodes: [], edges: [] } });
     
     // Add your logic here, e.g., navigate to a pipeline detail page
@@ -201,23 +202,43 @@ const PersistentDrawerLeft: React.FC = () => {
                       ))}
 
                       
-<ListItem>
+            <ListItem>
                 <ListItemText 
                     primary="Saved Pipelines" 
                     primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
                 />
             </ListItem>
-            {Array.isArray(pipelines) && pipelines.map((pipeline) => (
+            {Array.isArray(pipelines) && Array.from(
+              pipelines
+              .reduce((map, pipeline) => {
+                console.log("Checking pipeline: ", pipeline);
+                /*
+                if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
+                  return map;
+                }
+
+                if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
+                  map.set(pipeline.name, pipeline);
+                }
+                return map;
+                */
+                map.set(pipeline.name, pipeline);
+                return map;
+              }, new Map())
+              .values() // Extract only the values (newest pipelines) from the map
+            )
+            .filter((pipeline) => pipeline.repositoryId === repository.id) // Filter by repository ID
+            .map((pipeline) => (
                 pipeline.repositoryId === repository.id && (
                     <ListItem key={pipeline.id} disablePadding>
                         <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
-                            <ListItemText 
-                                secondary={pipeline.name} 
-                                secondaryTypographyProps={{ fontSize: "0.8rem" }} 
-                            />
+                          <ListItemText 
+                            secondary={pipeline.name + " " + pipeline.timestamp}
+                            secondaryTypographyProps={{ fontSize: "0.8rem" }} 
+                          />
                         </ListItemButton>
                     </ListItem>
-                )
+                    )
             ))}
                     </React.Fragment>
                   )

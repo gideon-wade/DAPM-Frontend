@@ -64,6 +64,7 @@ export default function AutoGrid() {
   };
 
   pipelines.map(({ pipeline: flowData, id, name }) => {
+    console.log("Redering", id, name, "flowdata:", flowData);
     const nodes = flowData.nodes;
     const edges = flowData.edges;
     //console.log(name, nodes, edges);
@@ -81,8 +82,9 @@ export default function AutoGrid() {
 
         const width = 800
         const height = 600
-
+        console.log("id", pipelineId, "nodes in render:", nodes);
         const nodesBounds = getNodesBounds(nodes!);
+        console.log("NodeBounds", nodesBounds);
         const { x, y, zoom } = getViewportForBounds(nodesBounds, width, height, 0.5, 2, 1);
 
         toPng(document.querySelector(`#${pipelineId} .react-flow__viewport`) as HTMLElement, {
