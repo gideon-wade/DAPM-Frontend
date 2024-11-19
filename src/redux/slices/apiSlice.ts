@@ -86,9 +86,11 @@ export const repositoryThunk = createAsyncThunk<
         repositories.push(...repos.result.repositories);
       }
       return repositories;
-  } catch (error) {
-    console.log("repository thunk error")
-    return thunkAPI.rejectWithValue(error); // Handle error
+  } catch (error: any) {
+    console.error("Repository thunk error:", error);
+    return thunkAPI.rejectWithValue({
+      message: error.message || "Failed to fetch repositories",
+    }); 
   }
 });
 
@@ -109,9 +111,11 @@ export const resourceThunk = createAsyncThunk<
     }
 
     return await Promise.all(resources);
-  } catch (error) {
-    console.log("resource thunk error")
-    return thunkAPI.rejectWithValue(error); // Handle error
+  } catch (error: any) {
+    console.error("Resource thunk error:", error);
+    return thunkAPI.rejectWithValue({
+      message: error.message || "Failed to fetch resources",
+    }); 
   }
 });
 
