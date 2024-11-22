@@ -19,13 +19,17 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useState, useCallback } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutButton from './Buttons/LogoutButton';
+import ResourceUpload from './Parts/ResourceUpload';
+import { Organization, Repository } from "../../redux/states/apiState";
+import { useAppSelector } from "../../hooks";
+import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 
 interface DraggableGridItemProps {
   id: string;
   name: string;
   imgData: string;
   index: number;
-  isFolder: boolean
+  isFolder: boolean;
   folderID: string;
   moveCard: (dragIndex: number, hoverIndex: number) => void;
   moveCardToFolder: (cardId: string, folderId: string) => void;
@@ -52,8 +56,19 @@ const DraggableGridItem: React.FC<DraggableGridItemProps> = ({ id, name, imgData
 export default function AutoGrid() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const pipelines = useSelector(getPipelines)
+  const pipelines = useSelector(getPipelines);
+  const [resourceUploadOpen, setResourceUploadOpen] = useState(false);
+  const organizations: Organization[] = useAppSelector(getOrganizations);
+  const repositories: Repository[] = useAppSelector(getRepositories);
   const [currentFolderID, setCurrentFolderID] = useState('');
+
+  const handleResourceUploadOpen = () => {
+    setResourceUploadOpen(true);
+  };
+
+  const handleResourceUploadClose = () => {
+    setResourceUploadOpen(false);
+  };
 
   const createNewPipeline = () => {
     dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, currentFolderID, name: "unnamed pipeline", flowData: { nodes: [], edges: [] } }));
@@ -62,8 +77,9 @@ export default function AutoGrid() {
   const createNewFolder = () => {
     dispatch(addNewFolder({ id: `pipeline-${uuidv4()}`, currentFolderID, flowData: { nodes: [], edges: [] } }));
   }
+
   const handleDeletePipeline = (id: string) => {
-    dispatch(removePipeline({id, currentFolderID}));
+    dispatch(removePipeline({ id, currentFolderID }));
   }
   const moveCard = (dragIndex: number, hoverIndex: number): void => {
     const updatedPipelines = Array.from(pipelines);
@@ -77,7 +93,7 @@ export default function AutoGrid() {
   };
 
   const goToFolder = (folderID: string): void => {
-    setCurrentFolderID(folderID)
+    setCurrentFolderID(folderID);
   };
 
   const goToParentFolder = useCallback(() => {
@@ -87,8 +103,8 @@ export default function AutoGrid() {
     }
   }, [currentFolderID, pipelines]);
 
-  const filteredPipelines = pipelines.filter(pipeline => 
-    (pipeline.folderID === currentFolderID && !pipeline.isFolder) || 
+  const filteredPipelines = pipelines.filter(pipeline =>
+    (pipeline.folderID === currentFolderID && !pipeline.isFolder) ||
     (pipeline.isFolder && pipeline.folderID === currentFolderID)
   );
 
@@ -106,8 +122,8 @@ export default function AutoGrid() {
       <FlowDiagram nodes={nodes} edges={edges} />,
       container,
       () => {
-        const width = 800
-        const height = 600
+        const width = 800;
+        const height = 600;
         const nodesBounds = getNodesBounds(nodes!);
         const { x, y, zoom } = getViewportForBounds(nodesBounds, width, height, 0.5, 2, 1);
 
@@ -128,42 +144,46 @@ export default function AutoGrid() {
     );
   });
 
-
   return (
     <Box sx={{ flexGrow: 1, flexBasis: "100%" }}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
-      <Button
-        variant="contained"
-        startIcon={<ArrowBackIcon />}
-        onClick={goToParentFolder}
-        disabled={currentFolderID === ''}
-        sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
-      >
-        Back
-      </Button>
-      <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
         <Button
           variant="contained"
-          startIcon={<AddIcon />}
-          onClick={createNewPipeline}
-          sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginRight: '10px' }}
-        >
-          Create Pipeline
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={createNewFolder}
+          startIcon={<ArrowBackIcon />}
+          onClick={goToParentFolder}
+          disabled={currentFolderID === ''}
           sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
         >
-          Create Folder
+          Back
         </Button>
+        <Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={createNewPipeline}
+            sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginRight: '10px' }}>
+            Create Pipeline
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={createNewFolder}
+            sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}>
+            Create Folder
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleResourceUploadOpen}
+            sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginLeft: '10px' }}>
+            Upload Resource
+          </Button>
+        </Box>
+        <LogoutButton />
       </Box>
-      <LogoutButton/>
-    </Box>
       <DndProvider backend={HTML5Backend}>
         <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: '10px' }}>
-          {filteredPipelines.map(({ id, name, imgData, isFolder, folderID}, index) => (
+          {filteredPipelines.map(({ id, name, imgData, isFolder, folderID }, index) => (
             <DraggableGridItem
               key={id}
               id={id}
@@ -180,6 +200,12 @@ export default function AutoGrid() {
           ))}
         </Grid>
       </DndProvider>
+      <ResourceUpload
+        orgs={organizations}
+        reps={repositories}
+        open={resourceUploadOpen}
+        onClose={handleResourceUploadClose}
+      />
     </Box>
   );
 }

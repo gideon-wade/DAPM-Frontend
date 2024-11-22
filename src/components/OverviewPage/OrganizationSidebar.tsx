@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {styled} from '@mui/material/styles';
+import React, { useState, useEffect } from 'react';
+import { styled } from '@mui/material/styles';
 import {
   Drawer,
   List,
@@ -28,7 +28,7 @@ import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/s
 import { Organization, Pipeline, Repository, Resource } from '../../redux/states/apiState';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { v4 as uuidv4 } from 'uuid';
-import ResourceUploadButton from './Buttons/ResourceUploadButton';
+import ResourceUpload from './Parts/ResourceUpload';
 import {
   downloadResource,
   fetchOrganization,
@@ -53,11 +53,9 @@ import { addNewPipeline } from '../../redux/slices/pipelineSlice';
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 import { NodeState } from '../../redux/states/pipelineState';
 
-
-
 const drawerWidth = 240;
 
-const DrawerHeader = styled('div')(({theme}) => ({
+const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   padding: theme.spacing(0, 1),
@@ -70,16 +68,14 @@ const PersistentDrawerLeft: React.FC = () => {
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
   const resources: Resource[] = useSelector(getResources);
-  // const pipelines : Pipeline[] = useSelector(getPipelines);
 
   const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>({});
+  const [openRepos, setOpenRepos] = useState<{ [key: string]: boolean }>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedRepository, setSelectedRepository] = useState<Repository | null>(null);
   const [loading, setLoading] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-
-
 
   useEffect(() => {
     dispatch(organizationThunk());
@@ -88,25 +84,20 @@ const PersistentDrawerLeft: React.FC = () => {
     dispatch(repositoryThunk(organizations));
   }, [organizations]);
   useEffect(() => {
-    dispatch(resourceThunk({organizations, repositories}));
+    dispatch(resourceThunk({ organizations, repositories }));
   }, [repositories]);
 
-  // Load the pipeline
-  const  [pipelines, setPipelines] = useState<Pipeline[]>([]);
+  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   useEffect(() => {
     async function loadPipelines(orgid: string, repid: string) {
-        const jsonPipelineData = await fetchRepositoryPipelines(orgid, repid);
-        // convert to array of pipelines
-        // const pipelines = Object.keys(jsonPipelineData).map((key) => jsonPipelineData[key]);
-        const pipelines = jsonPipelineData.result.pipelines
-
-        setPipelines(pipelines);
+      const jsonPipelineData = await fetchRepositoryPipelines(orgid, repid);
+      const pipelines = jsonPipelineData.result.pipelines;
+      setPipelines(pipelines);
     }
     if (organizations.length > 0 && repositories.length > 0) {
-        loadPipelines(organizations[0].id, repositories[0].id);
+      loadPipelines(organizations[0].id, repositories[0].id);
     }
   }, []);
-
 
   const handleDownload = async (resource: Resource) => {
     const response = await downloadResource(resource.organizationId, resource.repositoryId, resource.id);
@@ -117,9 +108,14 @@ const PersistentDrawerLeft: React.FC = () => {
     window.open(url, '_blank');
   };
 
-  const handleToggle = (orgId: string) => {
-    setOpenOrgs(prev => ({...prev, [orgId]: !prev[orgId]}));
+  const handleToggleOrg = (orgId: string) => {
+    setOpenOrgs(prev => ({ ...prev, [orgId]: !prev[orgId] }));
   };
+
+  const handleToggleRepo = (repoId: string) => {
+    setOpenRepos(prev => ({ ...prev, [repoId]: !prev[repoId] }));
+  };
+
   const openDeleteDialog = (repository: Repository) => {
     setSelectedRepository(repository);
     setDeleteDialogOpen(true);
@@ -136,7 +132,7 @@ const PersistentDrawerLeft: React.FC = () => {
     try {
       await deleteRepository(selectedRepository.organizationId, selectedRepository.id);
       console.log("Repository deleted successfully");
-      dispatch(repositoryThunk(organizations)); // Reload repositories after deletion
+      dispatch(repositoryThunk(organizations));
       setSuccessMessage(`Repository ${selectedRepository.name} deleted successfully!`);
       setShowSuccessDialog(true);
     } catch (error) {
@@ -146,18 +142,17 @@ const PersistentDrawerLeft: React.FC = () => {
       closeDeleteDialog();
     }
   };
+
   const handleCloseSuccessDialog = () => {
     setShowSuccessDialog(false);
   };
 
   const handlePipelineClick = async (pipeline: Pipeline) => {
     console.log('Pipeline clicked:', pipeline);
-    
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
-    
-    dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name as string, currentFolderID: "a", flowData: response.result.pipelines[0].pipeline as NodeState}));
-    // Add your logic here, e.g., navigate to a pipeline detail page
+    dispatch(addNewPipeline({ id: "pipeline-" + response.result.pipelines[0].id, name: response.result.pipelines[0].name as string, currentFolderID: "a", flowData: response.result.pipelines[0].pipeline as NodeState }));
   };
+
   return (
     <Drawer
       PaperProps={{
@@ -177,42 +172,47 @@ const PersistentDrawerLeft: React.FC = () => {
       variant="permanent"
       anchor="left"
     >
-      <Divider/>
+      <Divider />
       <DrawerHeader>
-        <Typography sx={{width: '100%', textAlign: 'center'}} variant="h6" noWrap component="div">
+        <Typography sx={{ width: '100%', textAlign: 'center' }} variant="h6" noWrap component="div">
           Organizations
         </Typography>
-        <AddOrganizationButton/>
+        <AddOrganizationButton />
       </DrawerHeader>
       <List>
         {organizations.map((organization) => (
           <React.Fragment key={organization.id}>
-            <ListItem sx={{justifyContent: 'space-between'}} disablePadding>
-              <ListItemButton onClick={() => handleToggle(organization.id)}>
+            <ListItem sx={{ justifyContent: 'space-between' }} disablePadding>
+              <ListItemButton onClick={() => handleToggleOrg(organization.id)}>
                 <ListItemText
                   primary={organization.name}
-                  primaryTypographyProps={{style: {fontSize: '25px', marginBlock: '0rem'}}}
+                  primaryTypographyProps={{ style: { fontSize: '25px', marginBlock: '0rem' } }}
                 />
                 <IconButton edge="end">
-                  {openOrgs[organization.id] ? <ExpandLess/> : <ExpandMore/>}
+                  {openOrgs[organization.id] ? <ExpandLess /> : <ExpandMore />}
                 </IconButton>
               </ListItemButton>
             </ListItem>
             <Collapse in={openOrgs[organization.id]} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
+              <List component="div" sx={{ paddingLeft: '16px' }}>
                 {repositories.map((repository) => (
                   repository.organizationId === organization.id && (
                     <React.Fragment key={repository.id}>
-                      <ListItem sx={{paddingInline: '5px'}}>
-                        <ListItemText
-                          primary={repository.name}
-                          primaryTypographyProps={{
-                            style: {
-                              fontSize: '25px',
-                              marginBlock: '10px'
-                            }
-                          }}
-                        />
+                      <ListItem sx={{ justifyContent: 'space-between' }} disablePadding>
+                        <ListItemButton onClick={() => handleToggleRepo(repository.id)}>
+                          <ListItemText
+                            primary={repository.name}
+                            primaryTypographyProps={{
+                              style: {
+                                fontSize: '25px',
+                                marginBlock: '10px'
+                              }
+                            }}
+                          />
+                          <IconButton edge="end">
+                            {openRepos[repository.id] ? <ExpandLess /> : <ExpandMore />}
+                          </IconButton>
+                        </ListItemButton>
                         <IconButton
                           aria-label="delete"
                           onClick={() => openDeleteDialog(repository)}
@@ -223,59 +223,56 @@ const PersistentDrawerLeft: React.FC = () => {
                           <DeleteIcon />
                         </IconButton>
                       </ListItem>
+                      <Collapse in={openRepos[repository.id]} timeout="auto" unmountOnExit>
+                        <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                      listName={"Eventlog"} typeName={"eventLog"}></ResourceList>
 
-                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                    listName={"Eventlog"} typeName={"eventLog"}></ResourceList>
+                        <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                      listName={"BPMN Models"} typeName={"bpmnModel"}></ResourceList>
 
-                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                    listName={"BPMN Models"} typeName={"bpmnModel"}></ResourceList>
+                        <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                      listName={"Petri Nets"} typeName={"petriNet"}></ResourceList>
 
-                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                    listName={"Petri Nets"} typeName={"petriNet"}></ResourceList>
+                        <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                      listName={"Operators"} typeName={"operator"}></ResourceList>
 
-                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                    listName={"Operators"} typeName={"operator"}></ResourceList>
-
-                      <ListItem>
-                        <ListItemText
-                          primary="Saved Pipelines"
-                          primaryTypographyProps={{ style: { fontSize: '0.9rem' } }}
-                        />
-                      </ListItem>
-                      {Array.isArray(pipelines) && Array.from(
-                        pipelines
-                          .reduce((map, pipeline) => {
-
-                            if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
+                        <ListItem>
+                          <ListItemText
+                            primary="Saved Pipelines"
+                            primaryTypographyProps={{ style: { fontSize: '0.9rem' } }}
+                          />
+                        </ListItem>
+                        {Array.isArray(pipelines) && Array.from(
+                          pipelines
+                            .reduce((map, pipeline) => {
+                              if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
+                                return map;
+                              }
+                              if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
+                                map.set(pipeline.name, pipeline);
+                              }
                               return map;
-                            }
-
-                            if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
-                              map.set(pipeline.name, pipeline);
-                            }
-                            return map;
-
-                          }, new Map())
-                          .values() // Extract only the values (newest pipelines) from the map
-                      )
-                        .filter((pipeline) => pipeline.repositoryId === repository.id) // Filter by repository ID
-                        .map((pipeline) => (
-                          pipeline.repositoryId === repository.id && (
-                            <ListItem key={pipeline.id} disablePadding>
-                              <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
-                                <ListItemText
-                                  secondary={pipeline.name}
-                                  secondaryTypographyProps={{ fontSize: "0.8rem" }}
-                                />
-                              </ListItemButton>
-                            </ListItem>
-                          )
-                        ))}
-
+                            }, new Map())
+                            .values()
+                        )
+                          .filter((pipeline) => pipeline.repositoryId === repository.id)
+                          .map((pipeline) => (
+                            pipeline.repositoryId === repository.id && (
+                              <ListItem key={pipeline.id} disablePadding>
+                                <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
+                                  <ListItemText
+                                    secondary={pipeline.name}
+                                    secondaryTypographyProps={{ fontSize: "0.8rem" }}
+                                  />
+                                </ListItemButton>
+                              </ListItem>
+                            )
+                          ))}
+                      </Collapse>
                     </React.Fragment>
                   )
                 ))}
-                <ListItem sx={{justifyContent: 'center'}}>
+                <ListItem sx={{ justifyContent: 'center' }}>
                   <Box sx={{
                     width: 'auto',
                     display: 'flex',
@@ -283,7 +280,7 @@ const PersistentDrawerLeft: React.FC = () => {
                     justifyContent: 'center',
                     alignItems: 'center'
                   }}>
-                    <CreateRepositoryButton orgId={organization.id}/>
+                    <CreateRepositoryButton orgId={organization.id} />
                   </Box>
                 </ListItem>
               </List>

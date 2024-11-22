@@ -1,6 +1,6 @@
 import React from 'react';
 import { ListItem, ListItemButton, ListItemText, Box } from '@mui/material';
-import ResourceUploadButton from '../Buttons/ResourceUploadButton';
+import ResourceUpload from './ResourceUpload';
 import { Resource } from '../../../redux/states/apiState';
 
 interface ResourceListProps {
@@ -19,9 +19,9 @@ const ResourceList: React.FC<ResourceListProps> = ({ repository, resources, hand
           primary={listName}
           primaryTypographyProps={{ style: { fontSize: '0.9rem' } }}
         />
-        <Box sx={{ marginLeft: 'auto' }}>
-          <ResourceUploadButton orgId={repository.organizationId} repId={repository.id} />
-        </Box>
+        {/*<Box sx={{ marginLeft: 'auto' }}>*/}
+        {/*  <ResourceUploadButton orgId={repository.organizationId} repId={repository.id} />*/}
+        {/*</Box>*/}
       </ListItem>
       {resources.map((resource) => (
         resource.repositoryId === repository.id && resource.type === typeName && (
