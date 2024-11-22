@@ -48,7 +48,7 @@ import OperatorUploadButton from './Buttons/OperatorUploadButton';
 import { Padding } from '@mui/icons-material';
 import { json } from 'stream/consumers';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ResourceList from './ResourceList';
+import ResourceList from './Parts/ResourceList';
 import { addNewPipeline } from '../../redux/slices/pipelineSlice';
 import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
 import { NodeState } from '../../redux/states/pipelineState';

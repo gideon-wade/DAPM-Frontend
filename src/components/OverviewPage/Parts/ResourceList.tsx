@@ -1,7 +1,7 @@
 import React from 'react';
 import { ListItem, ListItemButton, ListItemText, Box } from '@mui/material';
-import ResourceUploadButton from './Buttons/ResourceUploadButton';
-import { Resource } from '../../redux/states/apiState';
+import ResourceUploadButton from '../Buttons/ResourceUploadButton';
+import { Resource } from '../../../redux/states/apiState';
 
 interface ResourceListProps {
   repository: { organizationId: string, id: string, name: string };
