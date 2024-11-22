@@ -31,9 +31,9 @@ import { v4 as uuidv4 } from 'uuid';
 import ResourceUploadButton from './Buttons/ResourceUploadButton';
 import {
   downloadResource,
-  fetchOrganisation,
-  fetchOrganisationRepositories,
-  fetchOrganisations,
+  fetchOrganization,
+  fetchOrganizationRepositories,
+  fetchOrganizations,
   fetchPipeline,
   fetchRepositoryPipelines,
   fetchRepositoryResources,
@@ -180,7 +180,7 @@ const PersistentDrawerLeft: React.FC = () => {
       <Divider/>
       <DrawerHeader>
         <Typography sx={{width: '100%', textAlign: 'center'}} variant="h6" noWrap component="div">
-          Organisations
+          Organizations
         </Typography>
         <AddOrganizationButton/>
       </DrawerHeader>
