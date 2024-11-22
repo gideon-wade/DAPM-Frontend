@@ -19,7 +19,7 @@ import ConformanceIcon from '@mui/icons-material/Balance';
 import CustomOperatorIcon from '@mui/icons-material/AutoFixHigh';
 import BusinessIcon from '@mui/icons-material/Business';
 import { useSelector } from 'react-redux';
-import { getActiveFlowData } from '../../redux/selectors';
+import { getActiveFlowData, getActivePipeline } from '../../redux/selectors';
 
 const drawerWidth = 240;
 
@@ -37,6 +37,7 @@ export default function PersistentDrawerLeft() {
   const flowData = useSelector(getActiveFlowData);
   const [open, setOpen] = React.useState(false);
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
+  const pipelineName = useSelector(getActivePipeline)?.name
 
   const onDragStart = (event: React.DragEvent, nodeType: string, data: string, algorithmType: string | undefined) => {
     event.dataTransfer.setData('application/reactflow', JSON.stringify({type: nodeType, data: data, algorithmType: algorithmType}));
@@ -79,7 +80,7 @@ export default function PersistentDrawerLeft() {
       const blob = new Blob([serializedData], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `pipeline_export_${Date.now()}.json`;
+      link.download = `${pipelineName}.json`;
       link.click();
     };
   
@@ -96,7 +97,7 @@ export default function PersistentDrawerLeft() {
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `pipeline_export_${Date.now()}.csv`;
+      link.download = `${pipelineName}.csv`;
       link.click();
       }
     };
@@ -111,7 +112,7 @@ export default function PersistentDrawerLeft() {
       const canvas = await html2canvas(flowContainer as HTMLElement);
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
-      link.download = `pipeline_export_${Date.now()}.png`;
+      link.download = `${pipelineName}.png`;
       link.click();
     };
   
@@ -130,7 +131,7 @@ export default function PersistentDrawerLeft() {
       const imgWidth = 190;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-      pdf.save(`pipeline_export_${Date.now()}.pdf`);
+      pdf.save(`${pipelineName}.pdf`);
     };
 
 
