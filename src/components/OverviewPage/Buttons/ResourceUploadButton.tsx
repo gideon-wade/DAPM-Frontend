@@ -79,7 +79,7 @@ const ResourceUploadButton = ({ orgId, repId }: UploadButtonProps) => {
                                 </Select>
 
                                 <FormLabel>Upload File</FormLabel>
-                                <input type="file" name="ResourceFile" />
+                                <input type="file" name="ResourceFile" style={{color:"gray"}}  />
                             </FormControl>
 
                             <Button type="submit" sx={{ backgroundColor: "gray", padding: "1px", color: "black" }}>Submit</Button>
