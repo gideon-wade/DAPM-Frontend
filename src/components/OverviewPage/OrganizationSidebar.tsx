@@ -226,42 +226,6 @@ const PersistentDrawerLeft: React.FC = () => {
 
                       <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
                                     listName={"Eventlog"} typeName={"eventLog"}></ResourceList>
-                    
-            <ListItem>
-                <ListItemText 
-                    primary="Saved Pipelines" 
-                    primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
-                />
-            </ListItem>
-            {Array.isArray(pipelines) && Array.from(
-              pipelines
-              .reduce((map, pipeline) => {
-                
-                if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
-                  return map;
-                }
-
-                if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
-                  map.set(pipeline.name, pipeline);
-                }
-                return map;
-                
-              }, new Map())
-              .values() // Extract only the values (newest pipelines) from the map
-            )
-            .filter((pipeline) => pipeline.repositoryId === repository.id) // Filter by repository ID
-            .map((pipeline) => (
-                pipeline.repositoryId === repository.id && (
-                    <ListItem key={pipeline.id} disablePadding>
-                        <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
-                          <ListItemText 
-                            secondary={pipeline.name}
-                            secondaryTypographyProps={{ fontSize: "0.8rem" }} 
-                          />
-                        </ListItemButton>
-                    </ListItem>
-                    )
-            ))}
 
                       <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
                                     listName={"BPMN Models"} typeName={"bpmnModel"}></ResourceList>
@@ -271,6 +235,42 @@ const PersistentDrawerLeft: React.FC = () => {
 
                       <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
                                     listName={"Operators"} typeName={"operator"}></ResourceList>
+
+                      <ListItem>
+                        <ListItemText
+                          primary="Saved Pipelines"
+                          primaryTypographyProps={{ style: { fontSize: '0.9rem' } }}
+                        />
+                      </ListItem>
+                      {Array.isArray(pipelines) && Array.from(
+                        pipelines
+                          .reduce((map, pipeline) => {
+
+                            if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
+                              return map;
+                            }
+
+                            if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
+                              map.set(pipeline.name, pipeline);
+                            }
+                            return map;
+
+                          }, new Map())
+                          .values() // Extract only the values (newest pipelines) from the map
+                      )
+                        .filter((pipeline) => pipeline.repositoryId === repository.id) // Filter by repository ID
+                        .map((pipeline) => (
+                          pipeline.repositoryId === repository.id && (
+                            <ListItem key={pipeline.id} disablePadding>
+                              <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
+                                <ListItemText
+                                  secondary={pipeline.name}
+                                  secondaryTypographyProps={{ fontSize: "0.8rem" }}
+                                />
+                              </ListItemButton>
+                            </ListItem>
+                          )
+                        ))}
 
                     </React.Fragment>
                   )
