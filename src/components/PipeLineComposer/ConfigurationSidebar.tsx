@@ -29,13 +29,17 @@ export interface ConfigurationSidebarProps {
 
 export default function PersistentDrawerRight({ selectableProp }: ConfigurationSidebarProps) {
 
-  const node = useSelector(getNodes)?.find(node => node.id === selectableProp?.id);
-  const edge = useSelector(getEdges)?.find(edge => edge.id === selectableProp?.id);
+  const node =
+    useSelector(getNodes)?.find(node => node.id === selectableProp?.id);
+  const edge =
+    useSelector(getEdges)?.find(edge => edge.id === selectableProp?.id);
 
-  const edgeEndNode = useSelector(getNodes)?.find(node => node.data.templateData.targetHandles.find(handle => handle.id === edge?.targetHandle));
+  const edgeEndNode =
+    useSelector(getNodes)?.find(node =>
+      node.data.templateData.targetHandles.find(handle => handle.id === edge?.targetHandle));
 
   if (edgeEndNode !== undefined && edgeEndNode?.type !== "dataSink")
-    return (null)
+    return null
 
   return (
     <Drawer
