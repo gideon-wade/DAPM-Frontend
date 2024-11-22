@@ -191,6 +191,10 @@ export async function deleteRepository(orgId: string, repId: string) {
     let response = await del(`/Organizations/${orgId}/repositories/${repId}`);
     return await getData(response.ticketId);
 }
+export async function deletePipeline(orgId: string, repId: string, pipeId: string) {
+    let response = await del(`/Organizations/${orgId}/repositories/${repId}/pipelines/${pipeId}`);
+    return await getData(response.ticketId);
+}
 
 
 
