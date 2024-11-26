@@ -67,7 +67,7 @@ const getData = async (ticketId: string): Promise<any> => {
             if (data.status) {
                 return data;
             }
-            await delay(3000); // Wait for 3 second before retrying
+            await delay(100); // Wait for 0.1 second before retrying
         } catch (error) {
             if (retries === maxRetries - 1) {
                 throw new Error('Max retries reached');
@@ -108,17 +108,17 @@ export async function fetchStatus (ticket: string) {
 	return await response;
 }
 
-export async function fetchOrganisations () {
+export async function fetchOrganizations () {
     let response = await get(`/Organizations`);
 	return await getData(response.ticketId);
 }
 
-export async function fetchOrganisation (orgId: string) {
+export async function fetchOrganization (orgId: string) {
     let response = await get(`/Organizations/${orgId}`);
 	return await getData(response.ticketId);
 }
 
-export async function fetchOrganisationRepositories (orgId: string) {
+export async function fetchOrganizationRepositories (orgId: string) {
     let response = await get(`/Organizations/${orgId}/repositories`);
 	return await getData(response.ticketId);
 }
@@ -232,7 +232,7 @@ export async function putOperator(orgId: string, repId: string, formData: FormDa
             throw new Error('Failed to fetch data');
         };
 
-        // Call getData function with the ticketId obtained from fetchOrganisations
+        // Call getData function with the ticketId obtained from fetchOrganizations
         return await getData(jsonData.ticketId);
     } catch (error) {
         console.error('put res, Error fetching data:', error);
