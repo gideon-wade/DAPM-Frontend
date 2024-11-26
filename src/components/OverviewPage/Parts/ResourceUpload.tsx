@@ -88,7 +88,7 @@ const ResourceUpload = ({orgs, reps, open, onClose}: UploadButtonProps) => {
                 value={selectedOrg}
                 onChange={handleOrgChange}
                 sx={{width: '100%'}}
-                defaultValue={orgs[0].id}
+                defaultValue={orgs[0]?.id || ""}
               >
                 {orgs.map((org) => <MenuItem key={org.id} value={org.id}>{org.name}</MenuItem>)}
               </Select>
