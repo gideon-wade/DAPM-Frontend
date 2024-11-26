@@ -153,8 +153,7 @@ export default function AutoGrid() {
           startIcon={<ArrowBackIcon />}
           onClick={goToParentFolder}
           disabled={currentFolderID === ''}
-          sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
-        >
+          sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}>
           Back
         </Button>
         <Box>

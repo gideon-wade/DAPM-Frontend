@@ -69,8 +69,14 @@ const PersistentDrawerLeft: React.FC = () => {
   const repositories: Repository[] = useAppSelector(getRepositories);
   const resources: Resource[] = useSelector(getResources);
 
-  const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>({});
-  const [openRepos, setOpenRepos] = useState<{ [key: string]: boolean }>({});
+  const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>(() => {
+    const savedState = localStorage.getItem('openOrgs');
+    return savedState ? JSON.parse(savedState) : {};
+  });
+  const [openRepos, setOpenRepos] = useState<{ [key: string]: boolean }>(() => {
+    const savedState = localStorage.getItem('openRepos');
+    return savedState ? JSON.parse(savedState) : {};
+  });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedRepository, setSelectedRepository] = useState<Repository | null>(null);
   const [loading, setLoading] = useState(false);
@@ -86,6 +92,14 @@ const PersistentDrawerLeft: React.FC = () => {
   useEffect(() => {
     dispatch(resourceThunk({ organizations, repositories }));
   }, [repositories]);
+
+  useEffect(() => {
+    localStorage.setItem('openOrgs', JSON.stringify(openOrgs));
+  }, [openOrgs]);
+
+  useEffect(() => {
+    localStorage.setItem('openRepos', JSON.stringify(openRepos));
+  }, [openRepos]);
 
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   useEffect(() => {
@@ -154,199 +168,199 @@ const PersistentDrawerLeft: React.FC = () => {
   };
 
   return (
-    <Drawer
-      PaperProps={{
-        sx: {
-          backgroundColor: '#292929',
-        }
-      }}
-      sx={{
-        width: drawerWidth,
-        position: 'static',
-        flexGrow: 1,
-        '& .MuiDrawer-paper': {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-        },
-      }}
-      variant="permanent"
-      anchor="left"
-    >
-      <Divider />
-      <DrawerHeader>
-        <Typography sx={{ width: '100%', textAlign: 'center' }} variant="h6" noWrap component="div">
-          Organizations
-        </Typography>
-        <AddOrganizationButton />
-      </DrawerHeader>
-      <List>
-        {organizations.map((organization) => (
-          <React.Fragment key={organization.id}>
-            <ListItem sx={{ justifyContent: 'space-between' }} disablePadding>
-              <ListItemButton onClick={() => handleToggleOrg(organization.id)}>
-                <ListItemText
-                  primary={organization.name}
-                  primaryTypographyProps={{ style: { fontSize: '25px', marginBlock: '0rem' } }}
-                />
-                <IconButton edge="end">
-                  {openOrgs[organization.id] ? <ExpandLess /> : <ExpandMore />}
-                </IconButton>
-              </ListItemButton>
-            </ListItem>
-            <Collapse in={openOrgs[organization.id]} timeout="auto" unmountOnExit>
-              <List component="div" sx={{ paddingLeft: '16px' }}>
-                {repositories.map((repository) => (
-                  repository.organizationId === organization.id && (
-                    <React.Fragment key={repository.id}>
-                      <ListItem sx={{ justifyContent: 'space-between' }} disablePadding>
-                        <ListItemButton onClick={() => handleToggleRepo(repository.id)}>
-                          <ListItemText
-                            primary={repository.name}
-                            primaryTypographyProps={{
-                              style: {
-                                fontSize: '25px',
-                                marginBlock: '10px'
-                              }
-                            }}
-                          />
-                          <IconButton edge="end">
-                            {openRepos[repository.id] ? <ExpandLess /> : <ExpandMore />}
-                          </IconButton>
-                        </ListItemButton>
-                        <IconButton
-                          aria-label="delete"
-                          onClick={() => openDeleteDialog(repository)}
-                          sx={{
-                            color: '#96281b'
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </ListItem>
-
-                      <Collapse in={openRepos[repository.id]} timeout="auto" unmountOnExit>
-
-                        {/*We hide the items if empty to save some space*/}
-                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'eventLog').length > 0 && (
-                            <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"Eventlog"} typeName={"eventLog"} />
-                        )}
-                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'bpmnModel').length > 0 && (
-                            <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"BPMN Models"} typeName={"bpmnModel"} />
-                        )}
-                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'petriNet').length > 0 && (
-                            <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"Petri Nets"} typeName={"petriNet"} />
-                        )}
-                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'operator').length > 0 && (
-                            <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"Operators"} typeName={"operator"} />
-                        )}
-
-                        {resources.filter(resource => resource.repositoryId === repository.id && (
-                            resource.type === 'eventLog' ||
-                            resource.type === 'bpmnModel' ||
-                            resource.type === 'petriNet' ||
-                            resource.type === 'operator'
-                        )).length === 0 && (
-                            <ListItem>
-                              <ListItemText
-                                  primary="Resources apear here when uploaded"
-                                  primaryTypographyProps={{ style: { fontSize: '0.7rem', color: 'gray' } }}
-                              />
-                            </ListItem>
-                        )}
-
-                        <ListItem>
-                          <ListItemText
-                            primary="Saved Pipelines"
-                            primaryTypographyProps={{ style: { fontSize: '0.9rem' } }}
-                          />
-                        </ListItem>
-
-                        {Array.isArray(pipelines) && Array.from(
-                          pipelines
-                            .reduce((map, pipeline) => {
-                              if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
-                                return map;
-                              }
-                              if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
-                                map.set(pipeline.name, pipeline);
-                              }
-                              return map;
-                            }, new Map())
-                            .values()
-                        )
-                          .filter((pipeline) => pipeline.repositoryId === repository.id)
-                          .map((pipeline) => (
-                            pipeline.repositoryId === repository.id && (
-                              <ListItem key={pipeline.id} disablePadding>
-                                <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
-                                  <ListItemText
-                                    secondary={pipeline.name}
-                                    secondaryTypographyProps={{ fontSize: "0.8rem" }}
-                                  />
-                                </ListItemButton>
-                              </ListItem>
-                            )
-                          ))}
-                      </Collapse>
-                    </React.Fragment>
-                  )
-                ))}
-                <ListItem sx={{ justifyContent: 'center' }}>
-                  <Box sx={{
-                    width: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                  }}>
-                    <CreateRepositoryButton orgId={organization.id} />
-                  </Box>
+      <Drawer
+          PaperProps={{
+            sx: {
+              backgroundColor: '#292929',
+            }
+          }}
+          sx={{
+            width: drawerWidth,
+            position: 'static',
+            flexGrow: 1,
+            '& .MuiDrawer-paper': {
+              width: drawerWidth,
+              boxSizing: 'border-box',
+            },
+          }}
+          variant="permanent"
+          anchor="left"
+      >
+        <Divider />
+        <DrawerHeader>
+          <Typography sx={{ width: '100%', textAlign: 'center' }} variant="h6" noWrap component="div">
+            Organizations
+          </Typography>
+          <AddOrganizationButton />
+        </DrawerHeader>
+        <List>
+          {organizations.map((organization) => (
+              <React.Fragment key={organization.id}>
+                <ListItem sx={{ justifyContent: 'space-between' }} disablePadding>
+                  <ListItemButton onClick={() => handleToggleOrg(organization.id)}>
+                    <ListItemText
+                        primary={organization.name}
+                        primaryTypographyProps={{ style: { fontSize: '25px', marginBlock: '0rem' } }}
+                    />
+                    <IconButton edge="end">
+                      {openOrgs[organization.id] ? <ExpandLess /> : <ExpandMore />}
+                    </IconButton>
+                  </ListItemButton>
                 </ListItem>
-              </List>
-              <Dialog
-                open={deleteDialogOpen}
-                onClose={closeDeleteDialog}
-              >
-                <DialogTitle>Confirm Deletion</DialogTitle>
-                <DialogContent>
-                  <DialogContentText>
-                    Are you sure you want to delete {selectedRepository?.name}?
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={closeDeleteDialog} color="primary">
-                    No
-                  </Button>
-                  <Button onClick={handleDeleteRepository} color="primary" disabled={loading} autoFocus>
-                    {loading ? <CircularProgress size={24} /> : "Yes"}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-              <Dialog
-                open={showSuccessDialog}
-                onClose={handleCloseSuccessDialog}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-              >
-                <DialogTitle id="alert-dialog-title">
-                  {"Success"}
-                </DialogTitle>
-                <DialogContent>
-                  <DialogContentText id="alert-dialog-description">
-                    {successMessage}
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleCloseSuccessDialog} autoFocus>
-                    OK
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Collapse>
-          </React.Fragment>
-        ))}
-      </List>
-    </Drawer>
+                <Collapse in={openOrgs[organization.id]} timeout="auto" unmountOnExit>
+                  <List component="div" sx={{ paddingLeft: '16px' }}>
+                    {repositories.map((repository) => (
+                        repository.organizationId === organization.id && (
+                            <React.Fragment key={repository.id}>
+                              <ListItem sx={{ justifyContent: 'space-between' }} disablePadding>
+                                <ListItemButton onClick={() => handleToggleRepo(repository.id)}>
+                                  <ListItemText
+                                      primary={repository.name}
+                                      primaryTypographyProps={{
+                                        style: {
+                                          fontSize: '25px',
+                                          marginBlock: '10px'
+                                        }
+                                      }}
+                                  />
+                                  <IconButton edge="end">
+                                    {openRepos[repository.id] ? <ExpandLess /> : <ExpandMore />}
+                                  </IconButton>
+                                </ListItemButton>
+                                <IconButton
+                                    aria-label="delete"
+                                    onClick={() => openDeleteDialog(repository)}
+                                    sx={{
+                                      color: '#96281b'
+                                    }}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </ListItem>
+
+                              <Collapse in={openRepos[repository.id]} timeout="auto" unmountOnExit>
+
+                                {/*We hide the items if empty to save some space*/}
+                                {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'eventLog').length > 0 && (
+                                    <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"Eventlog"} typeName={"eventLog"} />
+                                )}
+                                {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'bpmnModel').length > 0 && (
+                                    <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"BPMN Models"} typeName={"bpmnModel"} />
+                                )}
+                                {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'petriNet').length > 0 && (
+                                    <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"Petri Nets"} typeName={"petriNet"} />
+                                )}
+                                {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'operator').length > 0 && (
+                                    <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"Operators"} typeName={"operator"} />
+                                )}
+
+                                {resources.filter(resource => resource.repositoryId === repository.id && (
+                                    resource.type === 'eventLog' ||
+                                    resource.type === 'bpmnModel' ||
+                                    resource.type === 'petriNet' ||
+                                    resource.type === 'operator'
+                                )).length === 0 && (
+                                    <ListItem>
+                                      <ListItemText
+                                          primary="Resources apear here when uploaded"
+                                          primaryTypographyProps={{ style: { fontSize: '0.7rem', color: 'gray' } }}
+                                      />
+                                    </ListItem>
+                                )}
+
+                                <ListItem>
+                                  <ListItemText
+                                      primary="Saved Pipelines"
+                                      primaryTypographyProps={{ style: { fontSize: '0.9rem' } }}
+                                  />
+                                </ListItem>
+
+                                {Array.isArray(pipelines) && Array.from(
+                                    pipelines
+                                        .reduce((map, pipeline) => {
+                                          if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
+                                            return map;
+                                          }
+                                          if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
+                                            map.set(pipeline.name, pipeline);
+                                          }
+                                          return map;
+                                        }, new Map())
+                                        .values()
+                                )
+                                    .filter((pipeline) => pipeline.repositoryId === repository.id)
+                                    .map((pipeline) => (
+                                        pipeline.repositoryId === repository.id && (
+                                            <ListItem key={pipeline.id} disablePadding>
+                                              <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
+                                                <ListItemText
+                                                    secondary={pipeline.name}
+                                                    secondaryTypographyProps={{ fontSize: "0.8rem" }}
+                                                />
+                                              </ListItemButton>
+                                            </ListItem>
+                                        )
+                                    ))}
+                              </Collapse>
+                            </React.Fragment>
+                        )
+                    ))}
+                    <ListItem sx={{ justifyContent: 'center' }}>
+                      <Box sx={{
+                        width: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}>
+                        <CreateRepositoryButton orgId={organization.id} />
+                      </Box>
+                    </ListItem>
+                  </List>
+                  <Dialog
+                      open={deleteDialogOpen}
+                      onClose={closeDeleteDialog}
+                  >
+                    <DialogTitle>Confirm Deletion</DialogTitle>
+                    <DialogContent>
+                      <DialogContentText>
+                        Are you sure you want to delete {selectedRepository?.name}?
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={closeDeleteDialog} color="primary">
+                        No
+                      </Button>
+                      <Button onClick={handleDeleteRepository} color="primary" disabled={loading} autoFocus>
+                        {loading ? <CircularProgress size={24} /> : "Yes"}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                  <Dialog
+                      open={showSuccessDialog}
+                      onClose={handleCloseSuccessDialog}
+                      aria-labelledby="alert-dialog-title"
+                      aria-describedby="alert-dialog-description"
+                  >
+                    <DialogTitle id="alert-dialog-title">
+                      {"Success"}
+                    </DialogTitle>
+                    <DialogContent>
+                      <DialogContentText id="alert-dialog-description">
+                        {successMessage}
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={handleCloseSuccessDialog} autoFocus>
+                        OK
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </Collapse>
+              </React.Fragment>
+          ))}
+        </List>
+      </Drawer>
   );
 };
 
