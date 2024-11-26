@@ -29,6 +29,7 @@ export interface PipelineData {
 export interface NodeState {
   nodes: Node<NodeData>[];
   edges: Edge<EdgeData>[];
+  state: number;
   timestamp?: number;
 }
 

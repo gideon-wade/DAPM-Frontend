@@ -16,9 +16,11 @@ import { getNodesBounds, getViewportForBounds } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutButton from './Buttons/LogoutButton';
+import StatisticsButton from './Buttons/StatisticsButton';
+import { BarChart } from '@mui/x-charts/BarChart';
 
 interface DraggableGridItemProps {
   id: string;
@@ -56,11 +58,11 @@ export default function AutoGrid() {
   const [currentFolderID, setCurrentFolderID] = useState('');
 
   const createNewPipeline = () => {
-    dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, currentFolderID, name: "unnamed pipeline", flowData: { nodes: [], edges: [] } }));
+    dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, currentFolderID, name: "unnamed pipeline", flowData: { nodes: [], edges: [], state: 0} }));
     { navigate("/pipeline") }
   }
   const createNewFolder = () => {
-    dispatch(addNewFolder({ id: `pipeline-${uuidv4()}`, currentFolderID, flowData: { nodes: [], edges: [] } }));
+    dispatch(addNewFolder({ id: `pipeline-${uuidv4()}`, currentFolderID, flowData: { nodes: [], edges: [], state: 0} }));
   }
   const handleDeletePipeline = (id: string) => {
     dispatch(removePipeline({id, currentFolderID}));
@@ -91,6 +93,40 @@ export default function AutoGrid() {
     (pipeline.folderID === currentFolderID && !pipeline.isFolder) || 
     (pipeline.isFolder && pipeline.folderID === currentFolderID)
   );
+
+  const [currentStatsView, setCurrentStatsView] = useState(false);
+  const [activeChartType, setActiveChartType] = useState<number>(0)
+
+  const handleToggleStatView = (newStatsView: boolean) => {
+    setCurrentStatsView(newStatsView);
+  };
+  
+  const handleToggleCharts = (newActiveChartType: number) => {
+    setActiveChartType(newActiveChartType);
+  };
+
+  const sortPipelinesByState = useCallback(() => {
+    const stateCount = [0, 0, 0, 0]; // Assuming states are 0, 1, 2, 3
+    pipelines.forEach(pipeline => {
+      if (pipeline.pipeline && pipeline.pipeline.state !== undefined) {
+        const state = pipeline.pipeline.state;
+        if (state >= 0 && state < 4) {
+          stateCount[state]++;
+        }
+      }
+    });
+    return stateCount;
+  }, [pipelines]);
+
+  const chartData = useMemo(() => {
+    const stateCount = sortPipelinesByState();
+    return [
+      { state: 'State 0', count: stateCount[0] },
+      { state: 'State 1', count: stateCount[1] },
+      { state: 'State 2', count: stateCount[2] },
+      { state: 'State 3', count: stateCount[3] },
+    ];
+  }, [sortPipelinesByState]);
 
   pipelines.map(({ pipeline: flowData, id, folderID }) => {
     const nodes = flowData.nodes;
@@ -128,58 +164,116 @@ export default function AutoGrid() {
     );
   });
 
+  
+
+  const renderContent = () => {
+    {/* Statistics View  - This should be seperate cards and dropdown menu for filters and charts*/}
+    if (currentStatsView) {
+      const stateCount = sortPipelinesByState();
+      return (
+        <>
+        <Box sx={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
+          <Button
+            variant="contained"
+            //startIcon={<ArrowBackIcon />}
+            onClick={() => handleToggleCharts(0)}
+            sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
+          >
+            Charts
+          </Button>
+
+          <Button
+            variant="contained"
+            //startIcon={<ArrowBackIcon />}
+            //onClick={() => handleToggleCharts(0)}
+            sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
+          >
+            Filters
+          </Button>
+        </Box>
+        <Box sx={{ height: 400, width: '100%' }}>
+          <BarChart
+            series={[{ data: [stateCount[0], stateCount[1], stateCount[2], stateCount[3]] },]}
+            height={290}
+            xAxis={[{ data: ["Undeployed", "Deployed", "Finished", "Errored"],scaleType: 'band',},]}
+            yAxis={[{
+                min: 0, 
+                max: Math.ceil(Math.max(...stateCount)), 
+                tickNumber: Math.ceil(Math.max(...stateCount)) + 1, 
+              },
+            ]}
+            margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+          />
+        </Box>
+      </>
+      );
+    }
+
+    {/* Pipeline Grid View */}
+    return (
+      <>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
+          <Button
+            variant="contained"
+            startIcon={<ArrowBackIcon />}
+            onClick={goToParentFolder}
+            disabled={currentFolderID === ''}
+            sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
+          >
+            Back
+          </Button>
+          <Box>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={createNewPipeline}
+              sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginRight: '10px' }}
+            >
+              Create Pipeline
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={createNewFolder}
+              sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
+            >
+              Create Folder
+            </Button>
+          </Box>
+          <Box></Box>
+        </Box>
+        <DndProvider backend={HTML5Backend}>
+          <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: '10px' }}>
+            {filteredPipelines.map(({ id, name, imgData, isFolder, folderID}, index) => (
+              <DraggableGridItem
+                key={id}
+                id={id}
+                name={name}
+                imgData={imgData}
+                index={index}
+                isFolder={isFolder}
+                folderID={folderID}
+                moveCard={moveCard}
+                moveCardToFolder={moveCardToFolder}
+                goToFolder={goToFolder}
+                onDelete={handleDeletePipeline}
+              />
+            ))}
+          </Grid>
+        </DndProvider>
+      </>
+    );
+  };
 
   return (
     <Box sx={{ flexGrow: 1, flexBasis: "100%" }}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
-      <Button
-        variant="contained"
-        startIcon={<ArrowBackIcon />}
-        onClick={goToParentFolder}
-        disabled={currentFolderID === ''}
-        sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
-      >
-        Back
-      </Button>
-      <Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={createNewPipeline}
-          sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginRight: '10px' }}
-        >
-          Create Pipeline
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={createNewFolder}
-          sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
-        >
-          Create Folder
-        </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '10px' }}>
+        <Box sx={{ display: 'flex', gap: '10px' }}>
+          <StatisticsButton onToggle={handleToggleStatView} />
+          <LogoutButton />
+        </Box>
       </Box>
-      <LogoutButton/>
-    </Box>
-      <DndProvider backend={HTML5Backend}>
-        <Grid container spacing={{ xs: 1, md: 1 }} sx={{ padding: '10px' }}>
-          {filteredPipelines.map(({ id, name, imgData, isFolder, folderID}, index) => (
-            <DraggableGridItem
-              key={id}
-              id={id}
-              name={name}
-              imgData={imgData}
-              index={index}
-              isFolder={isFolder}
-              folderID={folderID}
-              moveCard={moveCard}
-              moveCardToFolder={moveCardToFolder}
-              goToFolder={goToFolder}
-              onDelete={handleDeletePipeline}
-            />
-          ))}
-        </Grid>
-      </DndProvider>
+      {renderContent()}
     </Box>
   );
 }

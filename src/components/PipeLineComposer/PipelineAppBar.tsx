@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Node } from "reactflow";
@@ -7,11 +7,12 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
 
 import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
-import { updatePipelineName } from "../../redux/slices/pipelineSlice";
+import { updatePipelineName, updatePipelineState } from "../../redux/slices/pipelineSlice";
 import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
 import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
+import { pipeline } from "stream";
 
 export default function PipelineAppBar() {
   const navigate = useNavigate();
@@ -27,6 +28,27 @@ export default function PipelineAppBar() {
     ERROR: "Error",
   };
   const [status, setStatus] = useState(STATUS.UNDEPLOYED);
+
+  const handleSetStatus = () => {
+    switch (flowData?.state) {
+      case 0:
+        setStatus(STATUS.UNDEPLOYED);
+        break;
+      case 1:
+        setStatus(STATUS.DEPLOYED);
+        break;
+      case 2:
+        setStatus(STATUS.FINISHED);
+        break;
+      case 3:
+        setStatus(STATUS.ERROR);
+        break;
+      default:
+        console.warn("Unknown state:", flowData?.state);
+        break;
+    }
+  };
+
   const handleStartEditing = () => {
     setIsEditing(true);
   };
@@ -49,10 +71,26 @@ export default function PipelineAppBar() {
     dispatch(updatePipelineName(name))
   }
 
+  const updateFlowState = (state: number) => {
+    if (typeof state !== "number") {
+        alert("Type must be an integer value");
+        return;
+    }
+    dispatch(updatePipelineState(state)); // Ensure dispatch is accessible
+  };
+
+  useEffect(() => {
+    handleSetStatus(); 
+  }, []);
+
   const flowData = useSelector(getActiveFlowData)
   console.log("FlowData: ", flowData);
   
   const generateJson = async () => {
+    //MA
+    updateFlowState(1);
+    setStatus("Deployed")
+    //
     var edges = flowData!.edges.map(edge => {
       return { sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle }
     })
