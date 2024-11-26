@@ -40,6 +40,7 @@ export default function PipelineCard({ id, name, imgData, index, isFolder, folde
       navigate('/pipeline');
     }
     else {
+      console.log("Clicked on id:", id)
       goToFolder(id)
     }
   };

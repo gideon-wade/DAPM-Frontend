@@ -40,7 +40,8 @@ import {
   fetchResource,
   putPipeline,
   putRepository,
-  deleteRepository
+  deleteRepository,
+  deletePipeline
 } from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
@@ -92,18 +93,19 @@ const PersistentDrawerLeft: React.FC = () => {
   }, [repositories]);
 
   // Load the pipeline
+  async function loadPipelines(orgid: string, repid: string) {
+    const jsonPipelineData = await fetchRepositoryPipelines(orgid, repid);
+    // convert to array of pipelines
+    // const pipelines = Object.keys(jsonPipelineData).map((key) => jsonPipelineData[key]);
+    const pipelines = jsonPipelineData.result.pipelines
+
+    setPipelines(pipelines);
+}
+
   const  [pipelines, setPipelines] = useState<Pipeline[]>([]);
   useEffect(() => {
-    async function loadPipelines(orgid: string, repid: string) {
-        const jsonPipelineData = await fetchRepositoryPipelines(orgid, repid);
-        // convert to array of pipelines
-        // const pipelines = Object.keys(jsonPipelineData).map((key) => jsonPipelineData[key]);
-        const pipelines = jsonPipelineData.result.pipelines
-
-        setPipelines(pipelines);
-    }
     if (organizations.length > 0 && repositories.length > 0) {
-        loadPipelines(organizations[0].id, repositories[0].id);
+      loadPipelines(organizations[0].id, repositories[0].id);
     }
   }, []);
 
@@ -146,6 +148,15 @@ const PersistentDrawerLeft: React.FC = () => {
       closeDeleteDialog();
     }
   };
+  const handleDeletePipeline = async (organizationId: string, repositoryId: string, pipelineId: string) => {
+    try {
+      const result = await deletePipeline(organizationId, repositoryId, pipelineId);
+      console.log("Pipeline deleted successfully:", result);
+      dispatch(() => {loadPipelines(organizationId, repositoryId)});  // Reload repositories after deletion
+    } catch (error) {
+      console.error("Error deleting pipeline:", error);
+    }
+  }
   const handleCloseSuccessDialog = () => {
     setShowSuccessDialog(false);
   };
@@ -155,8 +166,9 @@ const PersistentDrawerLeft: React.FC = () => {
     
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
     
-    dispatch(addNewPipeline({id: "pipeline-"+response.result.pipelines[0].id, name: response.result.pipelines[0].name as string, currentFolderID: "a", flowData: response.result.pipelines[0].pipeline as NodeState}));
+    dispatch(addNewPipeline({id: "pipeline-"+pipeline.id, name: response.result.pipelines[0].name as string, currentFolderID: "", flowData: response.result.pipelines[0].pipeline as NodeState}));
     // Add your logic here, e.g., navigate to a pipeline detail page
+    console.log("Added pipeline")
   };
   return (
     <Drawer
@@ -233,6 +245,7 @@ const PersistentDrawerLeft: React.FC = () => {
                     primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
                 />
             </ListItem>
+                      
             {Array.isArray(pipelines) && Array.from(
               pipelines
               .reduce((map, pipeline) => {
@@ -241,9 +254,8 @@ const PersistentDrawerLeft: React.FC = () => {
                   return map;
                 }
 
-                if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
-                  map.set(pipeline.name, pipeline);
-                }
+                map.set(pipeline.id, pipeline);
+                
                 return map;
                 
               }, new Map())
@@ -258,10 +270,19 @@ const PersistentDrawerLeft: React.FC = () => {
                             secondary={pipeline.name}
                             secondaryTypographyProps={{ fontSize: "0.8rem" }} 
                           />
+                          <IconButton
+                            aria-label="delete"
+                            onClick={() => handleDeletePipeline(organization.id, repository.id, pipeline.id)}
+                            sx={{
+                              color: '#96281b'
+                            }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
                         </ListItemButton>
                     </ListItem>
                     )
-            ))}
+            ))} 
 
                       <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
                                     listName={"BPMN Models"} typeName={"bpmnModel"}></ResourceList>

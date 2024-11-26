@@ -7,9 +7,9 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
 
 import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
-import { updatePipelineName } from "../../redux/slices/pipelineSlice";
+import { updatePipelineName, updatePipelineId } from "../../redux/slices/pipelineSlice";
 import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
-import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline } from "../../services/backendAPI";
+import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline, deletePipeline } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
 
@@ -39,6 +39,7 @@ export default function PipelineAppBar() {
   const repositories = useSelector(getRepositories)
 
   const pipelineName = useSelector(getActivePipeline)?.name
+  const pipelineId = useSelector(getActivePipeline)?.id
 
   const setPipelineName = (name: string) => {
     if (name.includes('/')) { 
@@ -174,7 +175,16 @@ export default function PipelineAppBar() {
       pipeline: flowClone,
       timestamp: flowClone?.timestamp
     };
+    console.log("SCOOPY DOOOO: " + pipelineId);//The
+    if (pipelineId != undefined) {
+      try {
+        const deleted = await deletePipeline(selectedOrg.id, selectedRepo.id, pipelineId.split("-").slice(1).join("-"))
+      } catch {
+
+      }
+    }
     const pipeline = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
+    dispatch(updatePipelineId("pipeline-"+pipeline.id));
   }
 
   return (
