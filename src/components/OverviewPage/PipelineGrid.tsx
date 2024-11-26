@@ -23,6 +23,7 @@ import ResourceUpload from './Parts/ResourceUpload';
 import { Organization, Repository } from "../../redux/states/apiState";
 import { useAppSelector } from "../../hooks";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
+import {UploadFile} from "@mui/icons-material";
 
 interface DraggableGridItemProps {
   id: string;
@@ -173,7 +174,7 @@ export default function AutoGrid() {
           </Button>
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
+            startIcon={<UploadFile />}
             onClick={handleResourceUploadOpen}
             sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginLeft: '10px' }}>
             Upload Resource
