@@ -37,6 +37,10 @@ const ResourceUpload = ({ orgs, reps, open, onClose }: UploadButtonProps) => {
         setSelectedRepo(''); // Reset selected repo when org changes
     };
 
+    const handleClose = () => {
+        onClose();
+    };
+
     const handleRepoChange = (event: SelectChangeEvent<string>) => {
         setSelectedRepo(event.target.value as string);
     };
