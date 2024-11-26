@@ -135,8 +135,13 @@ export default function PipelineAppBar() {
     
     console.log("requestdata",JSON.stringify(requestData))
 
-    validate(requestData)
-
+    
+    let errors = validate(requestData)
+    console.log("errors", errors)
+    if (errors.length > 0) {
+      alert(errors.join("\n"))
+      return
+    }
 
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
@@ -148,23 +153,89 @@ export default function PipelineAppBar() {
   }
 
   const validate = (requestData: any) => {
-    // all miner must have an operator
-    let has_operator = requestData?.pipeline?.nodes.filter((node: { type: string; }) => node?.type === "operator")
+    // all miners must have an operator
+    let errors: Array<string> = []
+    let instantiationData = requestData?.pipeline?.nodes.filter((node: { type: string; }) => node?.type === "operator")
                                                 .map((node: { data:  any }) => node.data)
-                                                .map((node: { instantiationData: any }) => node.instantiationData)
-                                                // .filter((node: { resource: any; }) => node?.resource)
-                                                // .map(((node: { organizationId: any; repositoryId: any; resourceId: any; }) => 
-                                                //     !!node?.organizationId && 
-                                                //     !!node?.repositoryId && 
-                                                //     !!node?.resourceId))
-    console.log("has operator1", JSON.stringify(has_operator))
-    console.log("has operator2", has_operator)
+                                                .map((node: { instantiationData: any }) => node.instantiationData.resource)
+    
+    console.log("has operator1", JSON.stringify(instantiationData))
+    console.log("has operator2", instantiationData)
+
+    errors = instantiationData.map((element: { organizationId: any; repositoryId: any; resourceId: any; }) => {
+      console.log(element, "orgiD:", element?.organizationId);
+      
+      if (!(element?.organizationId && element?.repositoryId && element?.resourceId)) {
+        return "A miner does not have an operator"
+      }
+      if (! element?.organizationId) {
+        return "Operator's algorithm does not have an organizationId"
+      } 
+      if (! element?.repositoryId) {
+        return "Operator's algorithm does not have an repositoryId"
+      } 
+      if (! element?.resourceId) {
+        return "Operator's algorithm does not have an resourceId"
+      }  
+      return ""
+    }).filter((element: string) => element !== "");
+
+    
     // all data sources must contain a file
+    let dataSources = requestData?.pipeline?.nodes.filter((node: { type: string; }) => node?.type === "dataSource")
+                                                .map((node: { data: any }) => node.data)
+                                                .map((node: { instantiationData: any }) => node.instantiationData.resource)
+    console.log("has file1", JSON.stringify(dataSources))
+    console.log("has file2", dataSources)
+    let errorsDatasource =  dataSources.map((element: { organizationId: any; repositoryId: any; resourceId: any; }) => {
+      if (!(element?.organizationId && element?.repositoryId && element?.resourceId)) {
+        return "A data source does not conatin a file"
+      }
+      if (! element?.organizationId) {
+        return "Data source does not have an organizationId"
+      } 
+      if (! element?.repositoryId) {
+        return "Data source does not have a repositoryId"
+      } 
+      if (! element?.resourceId) {
+        return "Data source does not have a resourceId"
+      }  
+      return ""
+    }).filter((element: string) => element !== "")
 
     // all edges must have altleast one connection
+    let edges = requestData?.pipeline?.edges
+    console.log("has edges1", JSON.stringify(edges))
+    console.log("has edges2", edges)
+
+    console.log("req", JSON.stringify(requestData))
+
+    let sourceHandles = requestData?.pipeline?.nodes.map((node: { data: any; }) => node.data.templateData.sourceHandles)
+    let targetHandles = requestData?.pipeline?.nodes.map((node: { data: any; }) => node.data.templateData.targetHandles)
+
+    console.log("sourceHandles", JSON.stringify(sourceHandles))
+    console.log("targetHandles", JSON.stringify(targetHandles))
+
+    let edgeSourceHandlesIds = edges.map((edge: { sourceHandle: any; }) => edge.sourceHandle)
+
+    console.log("edgeSourceHandlesIds", JSON.stringify(edgeSourceHandlesIds))
+    let hasHanldeAnEdge = sourceHandles.map(((srchandle: any[]) => srchandle.map(element => edgeSourceHandlesIds.includes(element.id)))).flat()
+
+    console.log("hasHanldeAnEdge", JSON.stringify(hasHanldeAnEdge))
+
+    let errorsEdges = hasHanldeAnEdge.map((element: any) => 
+      element ? "" : "An edge does not have a connection"
+    
+    ).filter((element: string) => element !== "")
 
     // mining output edge must have a file name
 
+    // all organiztion nodes must have an organization selected
+
+
+    // there is an active connection to the server
+
+    return errors.concat(errorsDatasource).concat(errorsEdges);
 
   }
 
