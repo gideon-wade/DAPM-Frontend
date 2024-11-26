@@ -223,18 +223,36 @@ const PersistentDrawerLeft: React.FC = () => {
                           <DeleteIcon />
                         </IconButton>
                       </ListItem>
+
                       <Collapse in={openRepos[repository.id]} timeout="auto" unmountOnExit>
-                        <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                      listName={"Eventlog"} typeName={"eventLog"}></ResourceList>
 
-                        <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                      listName={"BPMN Models"} typeName={"bpmnModel"}></ResourceList>
+                        {/*We hide the items if empty to save some space*/}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'eventLog').length > 0 && (
+                            <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"Eventlog"} typeName={"eventLog"} />
+                        )}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'bpmnModel').length > 0 && (
+                            <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"BPMN Models"} typeName={"bpmnModel"} />
+                        )}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'petriNet').length > 0 && (
+                            <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"Petri Nets"} typeName={"petriNet"} />
+                        )}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'operator').length > 0 && (
+                            <ResourceList repository={repository} resources={resources} handleDownload={handleDownload} listName={"Operators"} typeName={"operator"} />
+                        )}
 
-                        <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                      listName={"Petri Nets"} typeName={"petriNet"}></ResourceList>
-
-                        <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                      listName={"Operators"} typeName={"operator"}></ResourceList>
+                        {resources.filter(resource => resource.repositoryId === repository.id && (
+                            resource.type === 'eventLog' ||
+                            resource.type === 'bpmnModel' ||
+                            resource.type === 'petriNet' ||
+                            resource.type === 'operator'
+                        )).length === 0 && (
+                            <ListItem>
+                              <ListItemText
+                                  primary="Resources apear here when uploaded"
+                                  primaryTypographyProps={{ style: { fontSize: '0.7rem', color: 'gray' } }}
+                              />
+                            </ListItem>
+                        )}
 
                         <ListItem>
                           <ListItemText
@@ -242,6 +260,7 @@ const PersistentDrawerLeft: React.FC = () => {
                             primaryTypographyProps={{ style: { fontSize: '0.9rem' } }}
                           />
                         </ListItem>
+
                         {Array.isArray(pipelines) && Array.from(
                           pipelines
                             .reduce((map, pipeline) => {
