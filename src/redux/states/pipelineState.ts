@@ -37,7 +37,7 @@ export interface EdgeData {
 }
 
 export interface NodeData {
-  label: string;
+  label: string;  
   width: number;
   height: number;
   templateData: BaseTemplateData;

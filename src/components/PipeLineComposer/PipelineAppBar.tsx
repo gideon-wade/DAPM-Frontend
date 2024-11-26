@@ -7,11 +7,12 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
 
 import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
-import { updatePipelineName, updatePipelineId } from "../../redux/slices/pipelineSlice";
+import { updatePipelineName, updatePipelineId, setFlowdata } from "../../redux/slices/pipelineSlice";
 import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
 import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline, deletePipeline } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
+import { validate } from "uuid";
 
 export default function PipelineAppBar() {
   const navigate = useNavigate();
@@ -134,12 +135,36 @@ export default function PipelineAppBar() {
     
     console.log("requestdata",JSON.stringify(requestData))
 
+    validate(requestData)
+
+
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
     const pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
     const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
     await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
+
+  }
+
+  const validate = (requestData: any) => {
+    // all miner must have an operator
+    let has_operator = requestData?.pipeline?.nodes.filter((node: { type: string; }) => node?.type === "operator")
+                                                .map((node: { data:  any }) => node.data)
+                                                .map((node: { instantiationData: any }) => node.instantiationData)
+                                                // .filter((node: { resource: any; }) => node?.resource)
+                                                // .map(((node: { organizationId: any; repositoryId: any; resourceId: any; }) => 
+                                                //     !!node?.organizationId && 
+                                                //     !!node?.repositoryId && 
+                                                //     !!node?.resourceId))
+    console.log("has operator1", JSON.stringify(has_operator))
+    console.log("has operator2", has_operator)
+    // all data sources must contain a file
+
+    // all edges must have altleast one connection
+
+    // mining output edge must have a file name
+
 
   }
 
@@ -187,6 +212,36 @@ export default function PipelineAppBar() {
     dispatch(updatePipelineId("pipeline-"+pipeline.id));
   }
 
+  const uploadPipeline = async () => {
+    let selectedPipeline: HTMLInputElement = document.getElementById("pipelineSelectInput") as HTMLInputElement
+
+    if (selectedPipeline!.files!.length > 0) {
+      let file = selectedPipeline!.files![0];
+      let text = await file.text();
+      //console.log(text);
+      dispatch(setFlowdata(JSON.parse(text)));
+    }
+  }
+
+  const downloadPipeline = async () => {
+
+    const selectedOrg = organizations[0]
+    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
+
+    let flowClone = structuredClone(flowData);
+
+    flowClone?.nodes?.forEach((node: Node) => {
+      node.selected = false;
+      node.dragging = false;
+    });
+    
+    let tmp = document.createElement("a");
+    tmp.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(flowClone));
+    tmp.setAttribute('download', pipelineId+".json");
+    tmp.click();
+
+  }
+
   return (
     <AppBar position="fixed">
       <Toolbar sx={{ flexGrow: 1 }}>
@@ -212,6 +267,15 @@ export default function PipelineAppBar() {
         <Typography variant="body1" sx={{ color: "white" }}>
           Status: {status}
         </Typography>
+        <Button>
+          <label htmlFor="pipelineSelectInput">
+            <Typography variant="body1" sx={{ color: "white" }}>Upload pipeline</Typography>
+            <input id="pipelineSelectInput" type="file" style={{ display: 'none' }} onChange={() => uploadPipeline()}/>
+          </label>
+        </Button>
+        <Button onClick={() => downloadPipeline()}>
+          <Typography variant="body1" sx={{ color: "white" }}>Download pipeline</Typography>
+        </Button>
         <Button onClick={() => savePipeline()}>
           <Typography variant="body1" sx={{ color: "white" }}>Save pipeline</Typography>
         </Button>
