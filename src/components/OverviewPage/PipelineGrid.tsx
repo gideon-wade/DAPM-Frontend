@@ -108,7 +108,7 @@ export default function AutoGrid() {
   const sortPipelinesByState = useCallback(() => {
     const stateCount = [0, 0, 0, 0]; // Assuming states are 0, 1, 2, 3
     pipelines.forEach(pipeline => {
-      if (pipeline.pipeline && pipeline.pipeline.state !== undefined) {
+      if (pipeline.pipeline && pipeline.pipeline.state !== undefined && !pipeline.isFolder) {
         const state = pipeline.pipeline.state;
         if (state >= 0 && state < 4) {
           stateCount[state]++;
@@ -200,6 +200,7 @@ export default function AutoGrid() {
                 min: 0, 
                 max: Math.ceil(Math.max(...stateCount)), 
                 tickNumber: Math.ceil(Math.max(...stateCount)) + 1, 
+                tickMinStep: 1
               },
             ]}
             margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
