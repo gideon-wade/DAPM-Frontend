@@ -103,7 +103,7 @@ const pipelineSlice = createSlice({
       var activeFlowData = state.pipelines.find(pipeline => pipeline.id === state.activePipelineId)?.pipeline
       activeFlowData?.nodes.find(node => node.id === payload)?.data?.templateData?.sourceHandles.push({ type: 'source', id: "1" })
     },
-    setFlowdata: (state, { payload }: PayloadAction<NodeData | undefined>) => {
+    setFlowdata: (state, { payload }: PayloadAction<NodeState | undefined>) => {
       if (!payload) return
       var activePipeline = state.pipelines.find(pipeline => pipeline.id === state.activePipelineId)
       if (!activePipeline) return

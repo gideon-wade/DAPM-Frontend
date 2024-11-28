@@ -117,3 +117,7 @@ export interface HandleData {
   id: string,
 }
 
+export interface FlowData {
+  nodes: Array<Node<DataSourceNodeData | DataSinkNodeData | OperatorNodeData | OrganizationNodeData>>;
+  edges: Array<Edge>;
+}
