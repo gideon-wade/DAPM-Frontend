@@ -1,30 +1,37 @@
-import { styled } from '@mui/material/styles';
+import {styled} from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import PipelineCard from './PipelineCard';
-import { Button } from '@mui/material';
+import {Button} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { addNewPipeline, setImageData, removePipeline, reorderPipelines, addNewFolder, moveCardToFolder as moveCardToFolderAction } from '../../redux/slices/pipelineSlice';
-import { getPipelines } from '../../redux/selectors';
+import {useNavigate} from 'react-router-dom';
+import {useSelector} from 'react-redux';
+import {
+  addNewFolder,
+  addNewPipeline,
+  moveCardToFolder as moveCardToFolderAction,
+  removePipeline,
+  reorderPipelines,
+  setImageData
+} from '../../redux/slices/pipelineSlice';
+import {getPipelines} from '../../redux/selectors';
 import FlowDiagram from './ImageGeneration/FlowDiagram';
 import ReactDOM from 'react-dom';
-import { toPng } from 'html-to-image';
-import { getNodesBounds, getViewportForBounds } from 'reactflow';
-import { v4 as uuidv4 } from 'uuid';
-import { DndProvider, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useState, useCallback } from 'react';
+import {toPng} from 'html-to-image';
+import {getNodesBounds, getViewportForBounds} from 'reactflow';
+import {v4 as uuidv4} from 'uuid';
+import {DndProvider} from 'react-dnd';
+import {HTML5Backend} from 'react-dnd-html5-backend';
+import {useCallback, useState} from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutButton from './Buttons/LogoutButton';
 import ResourceUpload from './Parts/ResourceUpload';
-import { Organization, Repository } from "../../redux/states/apiState";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
-import { UploadFile } from "@mui/icons-material";
-import { resourceThunk } from "../../redux/slices/apiSlice";
+import {Organization, Repository} from "../../redux/states/apiState";
+import {useAppDispatch, useAppSelector} from "../../hooks";
+import {getOrganizations, getRepositories} from "../../redux/selectors/apiSelector";
+import {UploadFile} from "@mui/icons-material";
+import {resourceThunk} from "../../redux/slices/apiSlice";
 
 interface DraggableGridItemProps {
   id: string;

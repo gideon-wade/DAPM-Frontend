@@ -1,17 +1,24 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { Node } from "reactflow";
-import { AppBar, Box, Button, TextField, Toolbar, Typography } from "@mui/material";
+import {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {useDispatch, useSelector} from "react-redux";
+import {Node} from "reactflow";
+import {AppBar, Box, Button, TextField, Toolbar, Typography} from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
 
-import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
-import { updatePipelineName, updatePipelineId } from "../../redux/slices/pipelineSlice";
-import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
-import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline, deletePipeline } from "../../services/backendAPI";
-import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
-import { getHandleId, getNodeId } from "./Flow";
+import {getActiveFlowData, getActivePipeline} from "../../redux/selectors";
+import {updatePipelineId, updatePipelineName} from "../../redux/slices/pipelineSlice";
+import {DataSinkNodeData, DataSourceNodeData, OperatorNodeData} from "../../redux/states/pipelineState";
+import {
+  deletePipeline,
+  fetchPipeline,
+  fetchRepositoryPipelines,
+  putCommandStart,
+  putExecution,
+  putPipeline
+} from "../../services/backendAPI";
+import {getOrganizations, getRepositories} from "../../redux/selectors/apiSelector";
+import {getHandleId, getNodeId} from "./Flow";
 
 export default function PipelineAppBar() {
   const navigate = useNavigate();

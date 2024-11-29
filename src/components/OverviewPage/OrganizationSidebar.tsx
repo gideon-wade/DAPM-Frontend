@@ -1,57 +1,36 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {styled} from '@mui/material/styles';
 import {
-  Drawer,
-  List,
-  Typography,
+  Box,
+  Button,
+  CircularProgress,
+  Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
+  Drawer,
+  IconButton,
+  List,
   ListItem,
   ListItemButton,
   ListItemText,
-  Box,
-  Collapse,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
-  CircularProgress,
-  Snackbar,
+  Typography,
 } from '@mui/material';
-import {ExpandMore, ExpandLess} from '@mui/icons-material';
+import {ExpandLess, ExpandMore} from '@mui/icons-material';
 import {useSelector} from 'react-redux';
-import {useNavigate} from 'react-router-dom';
-import {getOrganizations, getRepositories, getResources, getPipelines} from '../../redux/selectors/apiSelector';
+import {getOrganizations, getRepositories, getResources} from '../../redux/selectors/apiSelector';
 import {organizationThunk, repositoryThunk, resourceThunk} from '../../redux/slices/apiSlice';
 import {Organization, Pipeline, Repository, Resource} from '../../redux/states/apiState';
 import {useAppDispatch, useAppSelector} from '../../hooks';
-import {v4 as uuidv4} from 'uuid';
-import ResourceUpload from './Parts/ResourceUpload';
-import {
-  downloadResource,
-  fetchOrganization,
-  fetchOrganizationRepositories,
-  fetchOrganizations,
-  fetchPipeline,
-  fetchRepositoryPipelines,
-  fetchRepositoryResources,
-  fetchResource,
-  putPipeline,
-  putRepository,
-  deleteRepository,
-  deletePipeline
-} from '../../services/backendAPI';
+import {deleteRepository, downloadResource, fetchPipeline, fetchRepositoryPipelines} from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
-import OperatorUploadButton from './Buttons/OperatorUploadButton';
-import {Padding} from '@mui/icons-material';
-import {json} from 'stream/consumers';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ResourceList from './Parts/ResourceList';
 import {addNewPipeline} from '../../redux/slices/pipelineSlice';
-import {getActiveFlowData, getActivePipeline} from "../../redux/selectors";
 import {NodeState} from '../../redux/states/pipelineState';
 
 const drawerWidth = 240;
