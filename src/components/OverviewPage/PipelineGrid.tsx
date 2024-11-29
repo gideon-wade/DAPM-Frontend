@@ -21,6 +21,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutButton from './Buttons/LogoutButton';
 import StatisticsButton from './Buttons/StatisticsButton';
 import { BarChart } from '@mui/x-charts/BarChart';
+import ButtonWithDropDown from "./Buttons/ButtonDropDownCmp";
+import CheckboxDropdown from "./Buttons/SelectFilterButton";
 
 interface DraggableGridItemProps {
   id: string;
@@ -95,14 +97,9 @@ export default function AutoGrid() {
   );
 
   const [currentStatsView, setCurrentStatsView] = useState(false);
-  const [activeChartType, setActiveChartType] = useState<number>(0)
 
   const handleToggleStatView = (newStatsView: boolean) => {
     setCurrentStatsView(newStatsView);
-  };
-  
-  const handleToggleCharts = (newActiveChartType: number) => {
-    setActiveChartType(newActiveChartType);
   };
 
   const sortPipelinesByState = useCallback(() => {
@@ -118,15 +115,7 @@ export default function AutoGrid() {
     return stateCount;
   }, [pipelines]);
 
-  const chartData = useMemo(() => {
-    const stateCount = sortPipelinesByState();
-    return [
-      { state: 'State 0', count: stateCount[0] },
-      { state: 'State 1', count: stateCount[1] },
-      { state: 'State 2', count: stateCount[2] },
-      { state: 'State 3', count: stateCount[3] },
-    ];
-  }, [sortPipelinesByState]);
+
 
   pipelines.map(({ pipeline: flowData, id, folderID }) => {
     const nodes = flowData.nodes;
@@ -173,23 +162,8 @@ export default function AutoGrid() {
       return (
         <>
         <Box sx={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
-          <Button
-            variant="contained"
-            //startIcon={<ArrowBackIcon />}
-            onClick={() => handleToggleCharts(0)}
-            sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
-          >
-            Charts
-          </Button>
-
-          <Button
-            variant="contained"
-            //startIcon={<ArrowBackIcon />}
-            //onClick={() => handleToggleCharts(0)}
-            sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" } }}
-          >
-            Filters
-          </Button>
+          <ButtonWithDropDown/>
+          <CheckboxDropdown/>
         </Box>
         <Box sx={{ height: 400, width: '100%' }}>
           <BarChart
