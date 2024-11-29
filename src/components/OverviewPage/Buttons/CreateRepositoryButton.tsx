@@ -88,7 +88,7 @@ const CreateRepositoryButton = ({ orgId }: CreateRepositoryButtonProps) => {
       >
         <Box sx={style}>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography id="modal-modal-title" variant="h6" component="h2" sx={{ color: 'black' }}>
+            <Typography id="modal-modal-title" variant="h6" component="h2" sx={{ color: 'white' }}>
               Create repository
             </Typography>
             <form onSubmit={handleSubmit}>

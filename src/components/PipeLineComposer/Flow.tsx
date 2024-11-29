@@ -10,7 +10,8 @@ import ReactFlow, {
   getOutgoers
 } from "reactflow";
 
-import { onNodesChange, onEdgesChange, onConnect, addNode, removeNode, setNodes, removeEdge, undo, createSnapShot, redo } from "../../redux/slices/pipelineSlice";
+import { onNodesChange, onEdgesChange, onConnect,
+  addNode, removeNode, setNodes, removeEdge, undo, createSnapShot, redo } from "../../redux/slices/pipelineSlice";
 
 import CustomNode from "./Nodes/CustomNode";
 
