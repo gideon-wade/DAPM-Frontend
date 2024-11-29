@@ -19,9 +19,6 @@ const ResourceList: React.FC<ResourceListProps> = ({ repository, resources, hand
           primary={listName}
           primaryTypographyProps={{ style: { fontSize: '0.9rem' } }}
         />
-        {/*<Box sx={{ marginLeft: 'auto' }}>*/}
-        {/*  <ResourceUploadButton orgId={repository.organizationId} repId={repository.id} />*/}
-        {/*</Box>*/}
       </ListItem>
       {resources.map((resource) => (
         resource.repositoryId === repository.id && resource.type === typeName && (
