@@ -1,6 +1,19 @@
-import { ChangeEvent, useState, useEffect } from "react";
-import { Box, Button, Modal, TextField, Typography, CircularProgress, Snackbar, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import { PostNewPeer } from "../../../services/backendAPI";
+import {ChangeEvent, useEffect, useState} from "react";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Modal,
+  Snackbar,
+  TextField,
+  Typography
+} from "@mui/material";
+import {PostNewPeer} from "../../../services/backendAPI";
 
 const style = {
   position: 'absolute' as 'absolute',

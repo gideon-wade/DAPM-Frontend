@@ -1,7 +1,7 @@
 import {FormEvent, useState} from "react";
-import { Box, Button, FormControl, FormLabel, Modal, TextField, Typography } from '@mui/material';
+import {Box, Button, FormControl, FormLabel, Modal, TextField, Typography} from '@mui/material';
 
-import { createOperator } from "../../../services/backendAPI";
+import {createOperator} from "../../../services/backendAPI";
 
 export interface UploadButtonProps {
     orgId: string,
