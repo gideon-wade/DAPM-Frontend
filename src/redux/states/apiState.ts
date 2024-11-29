@@ -1,5 +1,3 @@
-import { Pipe } from "stream"
-
 export interface ApiState {
     organizations: Organization[],
     repositories: Repository[],

@@ -1,8 +1,6 @@
-import { Box, Typography } from '@mui/material';
-import { memo } from 'react';
-import {
-  NodeProps,
-  NodeResizer} from 'reactflow';
+import {Box, Typography} from '@mui/material';
+import {memo} from 'react';
+import {NodeProps, NodeResizer} from 'reactflow';
 
 
 function OrganizationNode({ data, id, selected }: NodeProps) {
