@@ -128,11 +128,9 @@ const ResourceUpload = ({orgs, reps, open, onClose}: UploadButtonProps) => {
               <FormLabel>Upload File</FormLabel>
               <input type="file" name="ResourceFile" style={{color: "gray"}}/>
             </FormControl>
-
             <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2}}>
-              <Button onClick={handleClose}
-                      sx={{backgroundColor: "gray", padding: "1px", color: "black"}}>Cancel</Button>
-              <Button type="submit" sx={{backgroundColor: "white", padding: "1px", color: "black"}}>Submit</Button>
+              <Button type="submit" sx={{backgroundColor: "white", paddingLeft: "10px",
+                paddingRight: "10px", paddingTop: "5px", paddingBottom: "5px", color: "black"}}>Submit</Button>
             </Box>
           </form>
         </Box>
