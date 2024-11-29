@@ -20,6 +20,11 @@ const style = {
     p: 4,
 };
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 const ResourceUploadButton = ({ orgId, repId }: UploadButtonProps) => {
     const dataTypes = ["eventLog", "bpmnModel", "petriNet"]
 

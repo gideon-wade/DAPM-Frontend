@@ -11,6 +11,11 @@ export const initialState: ApiState = {
     pipelines: []
   }
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 const apiSlice = createSlice({
     name: 'api',
     initialState: initialState,

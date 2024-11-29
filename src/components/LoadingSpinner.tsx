@@ -1,5 +1,10 @@
 import {Box, CircularProgress} from "@mui/material";
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 const LoadingSpinner = () => {
     return (
         <Box

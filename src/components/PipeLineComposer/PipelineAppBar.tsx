@@ -13,6 +13,11 @@ import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepos
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 export default function PipelineAppBar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();

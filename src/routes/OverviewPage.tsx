@@ -5,6 +5,11 @@ import OrganizationSidebar from "../components/OverviewPage/OrganizationSidebar"
 import PipelineGrid from "../components/OverviewPage/PipelineGrid";
 import LoadingSpinner from "../components/LoadingSpinner";
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 // TODO: logout button somewhere
 const UserPage = () => {
     const { user } = useAuth0();
