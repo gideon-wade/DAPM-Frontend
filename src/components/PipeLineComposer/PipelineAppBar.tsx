@@ -19,6 +19,7 @@ import {
 } from "../../services/backendAPI";
 import {getOrganizations, getRepositories} from "../../redux/selectors/apiSelector";
 import {getHandleId, getNodeId} from "./Flow";
+import { toast } from 'react-toastify';
 
 export default function PipelineAppBar() {
   const navigate = useNavigate();
@@ -61,6 +62,7 @@ export default function PipelineAppBar() {
   console.log("FlowData: ", flowData);
   
   const generateJson = async () => {
+    const loadingToast = toast.loading("Deploying pipeline: " + pipelineName);
     var edges = flowData!.edges.map(edge => {
       return { sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle }
     })
@@ -147,7 +149,12 @@ export default function PipelineAppBar() {
     const pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
     const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
     await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
-
+    toast.update(loadingToast, {
+      render: "Deployed pipeline: " + pipelineName,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
   }
 
   const getPipelines = async () => {
@@ -164,7 +171,7 @@ export default function PipelineAppBar() {
   }
 
   const savePipeline = async () => {
-
+    const loadingToast = toast.loading("Saving pipeline: " + pipelineName);
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
@@ -182,7 +189,6 @@ export default function PipelineAppBar() {
       pipeline: flowClone,
       timestamp: flowClone?.timestamp
     };
-    console.log("SCOOPY DOOOO: " + pipelineId);//The
     if (pipelineId != undefined) {
       try {
         const deleted = await deletePipeline(selectedOrg.id, selectedRepo.id, pipelineId.split("-").slice(1).join("-"))
@@ -192,6 +198,12 @@ export default function PipelineAppBar() {
     }
     const pipeline = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
     dispatch(updatePipelineId("pipeline-"+pipeline.id));
+    toast.update(loadingToast, {
+      render: "Saved pipeline: " + pipelineName,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
   }
 
   return (

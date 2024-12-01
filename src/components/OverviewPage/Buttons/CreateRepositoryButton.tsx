@@ -16,6 +16,7 @@ import {
   Typography
 } from '@mui/material';
 import {putRepository} from "../../../services/backendAPI";
+import { toast } from 'react-toastify';
 
 export interface CreateRepositoryButtonProps {
   orgId: string,
@@ -77,7 +78,8 @@ const CreateRepositoryButton = ({ orgId }: CreateRepositoryButtonProps) => {
     try {
       const result = await putRepository(orgId, repositoryName);
       console.log('repository successfully created:', result);
-      setShowSuccessDialog(true);
+      toast.success("Created repository: " + repositoryName);
+      handleClose();
     } catch (error) {
       console.error('Error creating repository:', error);
       setShowSnackbar(true);
