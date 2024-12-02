@@ -2,12 +2,15 @@ import React, { useRef, useState, useEffect } from "react";
 import ChartButton from "./ChartButton";
 import DropDownCard from "./DropDownCard";
 
-
 const chartTypes = ["Bar Chart", "Point Chart", "Pie Chart"];
 
-const ButtonWithDropDownCmp: React.FC = () => {
+interface ButtonWithDropDownCmpProps {
+  selectedChart: string;
+  onSelectChart: (chartType: string) => void;
+}
+
+const ButtonWithDropDownCmp: React.FC<ButtonWithDropDownCmpProps> = ({ selectedChart, onSelectChart }) => {
   const [open, setOpen] = useState(false);
-  const [selectedChart, setSelectedChart] = useState<string | null>(null);
   const drop = useRef<HTMLDivElement | null>(null);
 
   function handleClick(e: MouseEvent) {
@@ -25,7 +28,7 @@ const ButtonWithDropDownCmp: React.FC = () => {
   }, [open]);
 
   const handleSelectChart = (chartType: string) => {
-    setSelectedChart(chartType);
+    onSelectChart(chartType);
     setOpen(false);
   };
 

@@ -20,9 +20,9 @@ import { useState, useCallback, useMemo } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutButton from './Buttons/LogoutButton';
 import StatisticsButton from './Buttons/StatisticsButton';
-import { BarChart } from '@mui/x-charts/BarChart';
+import { BarChart, PieChart, LineChart } from '@mui/x-charts';
 import ButtonWithDropDown from "./Buttons/ButtonDropDownCmp";
-import CheckboxDropdown from "./Buttons/SelectFilterButton";
+import CheckboxDropdown, { CheckboxState } from "./Buttons/SelectFilterButton";
 
 interface DraggableGridItemProps {
   id: string;
@@ -102,20 +102,42 @@ export default function AutoGrid() {
     setCurrentStatsView(newStatsView);
   };
 
+  const [checkboxes, setCheckboxes] = useState<CheckboxState>({
+    Undeployed: true,
+    Deployed: true,
+    Finished: true,
+    Errored: true,
+  });
+  
+  const [selectedChart, setSelectedChart] = useState<string>("Bar Chart");
+
   const sortPipelinesByState = useCallback(() => {
-    const stateCount = [0, 0, 0, 0]; // Assuming states are 0, 1, 2, 3
-    pipelines.forEach(pipeline => {
-      if (pipeline.pipeline && pipeline.pipeline.state !== undefined && !pipeline.isFolder) {
-        const state = pipeline.pipeline.state;
-        if (state >= 0 && state < 4) {
-          stateCount[state]++;
-        }
+    const stateCount: number[] = [];
+    const labels: string[] = [];
+    Object.entries(stateMapping).forEach(([stateNum, stateName]) => {
+      if (checkboxes[stateName]) {
+        let count = 0;
+        pipelines.forEach(pipeline => {
+          if (pipeline.pipeline && pipeline.pipeline.state !== undefined && !pipeline.isFolder) {
+            const state = pipeline.pipeline.state;
+            if (state === parseInt(stateNum)) {
+              count++;
+            }
+          }
+        });
+        stateCount.push(count);
+        labels.push(stateName);
       }
     });
-    return stateCount;
-  }, [pipelines]);
+    return { stateCount, labels };
+  }, [pipelines, checkboxes]);
 
-
+  const stateMapping: { [key: number]: keyof CheckboxState } = {
+    0: "Undeployed",
+    1: "Deployed",
+    2: "Finished",
+    3: "Errored",
+  };
 
   pipelines.map(({ pipeline: flowData, id, folderID }) => {
     const nodes = flowData.nodes;
@@ -153,34 +175,69 @@ export default function AutoGrid() {
     );
   });
 
+
+  const renderChart = (stateCount: number[], labels: string[]) => {
+    const commonProps = {
+      height: 290,
+      margin: { top: 10, bottom: 30, left: 40, right: 10 },
+    };
+
+    switch (selectedChart) {
+      case "Bar Chart":
+        return (
+          <BarChart
+            series={[{ data: stateCount }]}
+            xAxis={[{ data: labels, scaleType: 'band' }]}
+            yAxis={[{
+              min: 0,
+              max: Math.ceil(Math.max(...stateCount, 1)),
+              tickNumber: Math.ceil(Math.max(...stateCount, 1)) + 1,
+              tickMinStep: 1
+            }]}
+            {...commonProps}
+          />
+        );
+      case "Point Chart":
+        return (
+          <LineChart
+            series={[{ data: stateCount}]}
+            xAxis={[{ data: labels, scaleType: 'point' }]}
+            yAxis={[{
+              min: 0,
+              max: Math.ceil(Math.max(...stateCount, 1)),
+              tickNumber: Math.ceil(Math.max(...stateCount, 1)) + 1,
+              tickMinStep: 1
+            }]}
+            {...commonProps}
+          />
+        );
+      case "Pie Chart":
+        return (
+          <PieChart
+            series={[{ data: stateCount.map((value, index) => ({ value, label: labels[index] })) }]}
+            {...commonProps}
+          />
+        );
+      default:
+        return null;
+    }
+  };
   
 
   const renderContent = () => {
     {/* Statistics View  - This should be seperate cards and dropdown menu for filters and charts*/}
     if (currentStatsView) {
-      const stateCount = sortPipelinesByState();
+      const { stateCount, labels } = sortPipelinesByState();
       return (
         <>
-        <Box sx={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
-          <ButtonWithDropDown/>
-          <CheckboxDropdown/>
-        </Box>
-        <Box sx={{ height: 400, width: '100%' }}>
-          <BarChart
-            series={[{ data: [stateCount[0], stateCount[1], stateCount[2], stateCount[3]] },]}
-            height={290}
-            xAxis={[{ data: ["Undeployed", "Deployed", "Finished", "Errored"],scaleType: 'band',},]}
-            yAxis={[{
-                min: 0, 
-                max: Math.ceil(Math.max(...stateCount)), 
-                tickNumber: Math.ceil(Math.max(...stateCount)) + 1, 
-                tickMinStep: 1
-              },
-            ]}
-            margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
-          />
-        </Box>
-      </>
+          <Box sx={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
+            <ButtonWithDropDown selectedChart={selectedChart} onSelectChart={setSelectedChart} />
+            <CheckboxDropdown checkboxes={checkboxes} setCheckboxes={setCheckboxes} />
+          </Box>
+          <Box sx={{ height: 400, width: '100%' }}>
+            {renderChart(stateCount, labels)}
+          </Box>
+        </>
       );
     }
 

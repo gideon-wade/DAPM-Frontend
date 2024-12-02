@@ -13,30 +13,29 @@ const theme = createTheme({
   },
 });
 
-interface CheckboxState {
+export interface CheckboxState {
   Undeployed: boolean;
   Deployed: boolean;
   Finished: boolean;
   Errored: boolean;
 }
 
-const CheckboxDropdown: React.FC = () => {
+interface CheckboxDropdownProps {
+  checkboxes: CheckboxState;
+  setCheckboxes: React.Dispatch<React.SetStateAction<CheckboxState>>;
+}
+
+const CheckboxDropdown: React.FC<CheckboxDropdownProps> = ({ checkboxes, setCheckboxes }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [checkboxes, setCheckboxes] = useState<CheckboxState>({
-    Undeployed: true,
-    Deployed: true,
-    Finished: true,
-    Errored: true,
-  });
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = () => setIsOpen(!isOpen);
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCheckboxes({
-      ...checkboxes,
+    setCheckboxes(prev => ({
+      ...prev,
       [event.target.name]: event.target.checked,
-    });
+    }));
   };
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -116,7 +115,7 @@ const CheckboxDropdown: React.FC = () => {
                       sx={{
                         borderRadius: "4px",  
                         height: '16.5px',     
-                        paddin: 0,
+                        padding: 0,
                       }}
                     />
                   }
