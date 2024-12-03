@@ -82,13 +82,13 @@ const BasicFlow = () => {
     const nextNodes = nodes?.map(node => {
       if (errors.find(error => error[1] === node.id)) {
         console.log('Node has error:', node);
-        console.log('Node has error json :', JSON.stringify(node)); 
+        console.log('Node has error json (new) :', JSON.stringify(node)); 
         return {
           ...node,
           hasError: true,
           // style: { backgroundColor: '#AA0000' } 
           style: { ...node.style,
-            backgroundColor: '#AA0000',
+            backgroundColor: '#BB0000',
             
            }
           // style: node.id == "organization" ? { backgroundColor: '#AA000011' } : { backgroundColor: '#AA0000' } 
@@ -98,7 +98,7 @@ const BasicFlow = () => {
           ...node,
           hasError: false,
           style: { ...node.style,
-            backgroundColor: '#AA00AA'
+            backgroundColor: node.type != "organization" ? '#556677' : ""
            }
           // style: node.type == "organization" ? { backgroundColor: '#AA00AA11' } : { backgroundColor: '#AA00AA' } 
           
