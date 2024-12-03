@@ -3,10 +3,10 @@ import { memo } from "react";
 import { Handle, NodeProps, Position } from "reactflow";
 import { NodeData, OperatorNodeData } from "../../../redux/states/pipelineState";
 
-function CustomNode({data, selected, hasError}: NodeProps<OperatorNodeData>) {
+function CustomNode({data, selected}: NodeProps<OperatorNodeData>) {
   // pineapple
   return (
-    <Box sx={{backgroundColor: hasError ?  '#AA0000' : '#556677', padding: '10px', color: 'white', position: "relative", border: selected ? (hasError ? '2px solid #aa11aa' : '2px solid #007bff') : (hasError ? '2px solid #aa0000':'2px solid #556677')}}>
+    <Box sx={{backgroundColor: '#556677', padding: '10px', color: 'white', position: "relative", border: selected ? '2px solid #007bff' : '2px solid #556677'}}>
       <Box style={{display: "flex", flexDirection: "column", justifyContent: "space-around", position: "absolute", top: "0", bottom: "0", left: "0"}}>
       {data?.templateData.targetHandles?.map(handle => <Handle
         key={handle.id}
@@ -18,7 +18,7 @@ function CustomNode({data, selected, hasError}: NodeProps<OperatorNodeData>) {
       />)}
       </Box>
       {data?.templateData.hint}
-      <Box style={{display: "flex", flexDirection: "column", justifyContent: "space-around", position: "absolute", top: "0", bottom: "0", right: "0", backgroundColor: hasError ?  '#AA0000' : '#556677'}}>
+      <Box style={{display: "flex", flexDirection: "column", justifyContent: "space-around", position: "absolute", top: "0", bottom: "0", right: "0", }}>
       {data?.templateData.sourceHandles?.map(handle => <Handle
         key={handle.id}
         id={handle.id}

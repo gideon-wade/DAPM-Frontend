@@ -9,7 +9,7 @@ import { getRelativeNodesBounds } from '../utils';
 import { OrganizationNodeData } from '../../../redux/states/pipelineState';
 
 
-function OrganizationNode({ data, id, selected, hasError }: NodeProps<OrganizationNodeData>) {
+function OrganizationNode({ data, id, selected }: NodeProps<OrganizationNodeData>) {
 
   const lineStyle: React.CSSProperties = {borderColor: selected ? '#007BFF' : 'white', visibility: 'visible'};
 
