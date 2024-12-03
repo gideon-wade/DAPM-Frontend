@@ -9,7 +9,7 @@ import { getRelativeNodesBounds } from '../utils';
 import { OrganizationNodeData } from '../../../redux/states/pipelineState';
 
 
-function OrganizationNode({ data, id, selected }: NodeProps<OrganizationNodeData>) {
+function OrganizationNode({ data, id, selected, hasError }: NodeProps<OrganizationNodeData>) {
 
   const lineStyle: React.CSSProperties = {borderColor: selected ? '#007BFF' : 'white', visibility: 'visible'};
 
@@ -23,7 +23,7 @@ function OrganizationNode({ data, id, selected }: NodeProps<OrganizationNodeData
   const minHeight = rect.y + rect.height
   
   return (
-    <Box sx={{backgroundColor: "#ffffff10", height: "100%"}}>
+    <Box sx={{backgroundColor:'#ffffff10', height: "100%"}}>
       <NodeResizer
         lineStyle={lineStyle}
         minHeight={minHeight}

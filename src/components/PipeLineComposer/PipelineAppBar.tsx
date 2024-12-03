@@ -12,7 +12,8 @@ import { DataSinkNodeData, DataSourceNodeData, FlowData, OperatorNodeData, Organ
 import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline, deletePipeline, fetchStatus } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
-import { validate } from "uuid";
+import DataSinkNode from "./Nodes/DataSinkNode";
+import { validate } from "./validation/validation";
 
 export default function PipelineAppBar() {
   const navigate = useNavigate();
@@ -133,7 +134,6 @@ export default function PipelineAppBar() {
     }
     
     const errors = validate(flowData as FlowData)
-    console.log("errors", errors)
     if (errors.length > 0) {
       alert(errors.join("\n"))
       return
@@ -148,95 +148,11 @@ export default function PipelineAppBar() {
       alert("There was an error deploying the pipeline")
       return
     }
-    // if (pipelineId === undefined) {
-    //   alert("There was an error deploying the pipeline")
-    //   return
-    // }
-
 
     const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
     await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
 
   }
-
-
-
-
-  
-  const validate = (flowdata: FlowData) => {
-      // all miners must have an operator
-      let errors: Array<string> = [];
-      let instantiationData = flowdata?.nodes.filter((node: Node) => node?.type === "operator")
-                                              .map((node: Node) => node.data)
-                                              .map((node: OperatorNodeData) => node.instantiationData.algorithm);
-      errors = instantiationData.map((element) => {
-        if (!(element?.organizationId && element?.repositoryId)) {
-          return "A miner does not have a valid operator";
-        }
-        return "";
-      });
-      
-      // all data sources must contain a file
-      let dataSources = flowdata?.nodes.filter((node: Node) => node?.type === "dataSource")
-                                        .map((node: Node) => node.data)
-                                        .map((node: DataSourceNodeData) => node.instantiationData.resource);
-      let errorsDatasource = dataSources.map(element => {
-        if (!(element?.organizationId && element?.repositoryId)) {
-          return "A data source does not contain a file";
-        }
-        return "";
-      });
-  
-      // all edges must have at least one connection
-      let edges = flowdata?.edges;
-      let sourceHandles = flowdata?.nodes.map((node: Node<any>) => node.data.templateData.sourceHandles);
-      let targetHandles = flowdata?.nodes.map((node: Node<any>) => node.data.templateData.targetHandles);
-      let edgeSourceHandlesIds = edges.map((edge: Edge) => edge.sourceHandle);
-      let hasHandleAnEdge = sourceHandles.map((srchandle: any[]) => srchandle.map(element => edgeSourceHandlesIds.includes(element.id))).flat();
-  
-      let errorsEdges = hasHandleAnEdge.map((element: any) => 
-        element ? "" : "A node is not connected"
-      );
-  
-      // mining output edge must have a file name
-      let datasinkInstantiationdata = flowdata?.nodes.filter((node: Node) => node?.type === "dataSink")
-                                                      .map((node: Node) => node.data)
-                                                      .map((node: DataSinkNodeData) => node.instantiationData.repository);
-      let errorsMiningOutput = [];
-      if (datasinkInstantiationdata.length == 0) {
-        errorsMiningOutput.push("There needs to be at least one valid datasink");
-      }
-  
-      // // all organization nodes must have an organization selected
-      let organizationNodes = flowdata.nodes.filter((node: Node) => node?.type === "organization")
-                                            .map((node: Node) => node.data)
-                                            .map((node: OrganizationNodeData) => node.instantiationData.organization);
-      let errorsOrganization = organizationNodes.map(element => {
-        if (!element?.id || !element?.name || !element?.domain) {
-          return "Organization node does not have a valid organization selected";
-        }
-        return "";
-      });
-  
-      // // datasink must have an output repository
-      let datasinkRepository = flowdata?.nodes.filter((node: Node) => node?.type === "dataSink")
-                                              .map((node: Node) => node.data)
-                                              .map((node: DataSinkNodeData) => node.instantiationData.repository);
-  
-      let errorsRepository = datasinkRepository.map(element => {
-        if (!element?.id || !element?.name || !element?.organizationId) {
-          return "Datasink does not have a valid repository selected";
-        }
-        return "";
-      });
-  
-      return errors.concat(errorsDatasource)
-                   .concat(errorsEdges)
-                   .concat(errorsMiningOutput)
-                   .concat(errorsOrganization)
-                   .concat(errorsRepository)
-                   .filter((element: string) => element !== "");
-  };
 
   const getPipelines = async () => {
     const selectedOrg = organizations[0]
@@ -360,4 +276,7 @@ export default function PipelineAppBar() {
     </AppBar>
   )
 }
+
+
+
 

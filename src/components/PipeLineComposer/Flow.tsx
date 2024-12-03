@@ -25,10 +25,11 @@ import 'reactflow/dist/style.css';
 import '@reactflow/node-resizer/dist/style.css';
 
 import { getNodePositionInsideParent, sortNodes } from "./utils";
-import { BaseTemplateData, NodeData, OperatorNodeData, OperatorTemplateData } from "../../redux/states/pipelineState";
+import { BaseTemplateData, FlowData, NodeData, OperatorNodeData, OperatorTemplateData } from "../../redux/states/pipelineState";
 import DataSourceNode from "./Nodes/DataSourceNode";
 import { getEdges, getNodes } from "../../redux/selectors";
 import { DefaultEdge } from "./Edges/DefaultEdge";
+import { validate } from "./validation/validation";
 import { v4 as uuidv4 } from "uuid";
 
 const nodeTypes = {
@@ -63,6 +64,65 @@ const BasicFlow = () => {
   const [selectedDeletables, setSelectedDeletables] = useState<Array<Node<NodeData> | Edge | undefined>>([]);
 
   const connectionLineStyle = { stroke: 'white', strokeOpacity: 1, strokeWidth: "1px" }
+
+  const [hasError, setHasError] = useState(false);
+
+  const setError = (value: boolean) => {
+    setHasError(value);
+  };
+
+
+  useOnSelectionChange({
+    onChange : ({ nodes: selectedNodes, edges: selectedEdges }) => {
+    console.log('Pipeline has changed:', nodes);
+    const errors = validate({nodes, edges} as FlowData);
+    console.log('Errors:', errors);
+
+    // find the nodes in the errors and set the hasError property to true
+    const nextNodes = nodes?.map(node => {
+      if (errors.find(error => error[1] === node.id)) {
+        setError(true);
+        console.log('Node has error:', node);
+        console.log('Node has error json :', JSON.stringify(node)); 
+        return {
+          ...node,
+          hasError: true,
+          // style: { backgroundColor: '#AA0000' } 
+          style: { ...node.style,
+            backgroundColor: '#AA0000'
+           }
+          // style: node.id == "organization" ? { backgroundColor: '#AA000011' } : { backgroundColor: '#AA0000' } 
+        }
+      } else {
+        setError(false);
+
+        return {
+          ...node,
+          hasError: false,
+          style: { ...node.style,
+            backgroundColor: '#AA00AA'
+           }
+          // style: node.type == "organization" ? { backgroundColor: '#AA00AA11' } : { backgroundColor: '#AA00AA' } 
+          
+
+          // selected : true
+        }
+      }
+    });
+    console.log('Next nodes:', nextNodes);
+    if (nextNodes) {
+      dispatch(setNodes(nextNodes));
+      console.log('Nodes have been updated:', nextNodes);
+    }
+    // Only update the state if there are changes
+    // if (JSON.stringify(nextNodes) !== JSON.stringify(nodes) && nextNodes) {
+    //   dispatch(setNodes(nextNodes));
+    //   console.log('Nodes have been updated:', nextNodes);
+    // }
+  }
+  });
+
+
 
   useOnSelectionChange({
     onChange: ({ nodes: selectedNodes, edges: selectedEdges }) => {
@@ -112,7 +172,6 @@ const BasicFlow = () => {
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-
       const { type, data, algorithmType } = JSON.parse(event.dataTransfer.getData('application/reactflow'));
 
       // check if the dropped element is valid
@@ -356,5 +415,4 @@ const BasicFlow = () => {
     </ReactFlowStyled>
   );
 };
-
 export default BasicFlow;

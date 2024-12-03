@@ -43,7 +43,6 @@ export interface NodeData {
   templateData: BaseTemplateData;
   instantiationData: BaseInstantiationData;
 }
-
 export interface DataSourceNodeData extends NodeData {
   templateData: DataSourceTemplateData;
   instantiationData: DataSourceInstantiationData;
