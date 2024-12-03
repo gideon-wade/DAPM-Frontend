@@ -1,17 +1,24 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { Node } from "reactflow";
-import { AppBar, Box, Button, TextField, Toolbar, Typography } from "@mui/material";
+import {useState, useEffect} from "react";
+import {useNavigate} from "react-router-dom";
+import {useDispatch, useSelector} from "react-redux";
+import {Node} from "reactflow";
+import {AppBar, Box, Button, TextField, Toolbar, Typography} from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
 
-import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
-import { updatePipelineName, updatePipelineState } from "../../redux/slices/pipelineSlice";
-import { DataSinkNodeData, DataSourceNodeData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
-import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline } from "../../services/backendAPI";
-import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
-import { getHandleId, getNodeId } from "./Flow";
+import {getActiveFlowData, getActivePipeline} from "../../redux/selectors";
+import {updatePipelineId, updatePipelineName, updatePipelineState} from "../../redux/slices/pipelineSlice";
+import {DataSinkNodeData, DataSourceNodeData, OperatorNodeData} from "../../redux/states/pipelineState";
+import {
+  deletePipeline,
+  fetchPipeline,
+  fetchRepositoryPipelines,
+  putCommandStart,
+  putExecution,
+  putPipeline
+} from "../../services/backendAPI";
+import {getOrganizations, getRepositories} from "../../redux/selectors/apiSelector";
+import {getHandleId, getNodeId} from "./Flow";
 import { pipeline } from "stream";
 
 export default function PipelineAppBar() {
@@ -61,6 +68,7 @@ export default function PipelineAppBar() {
   const repositories = useSelector(getRepositories)
 
   const pipelineName = useSelector(getActivePipeline)?.name
+  const pipelineId = useSelector(getActivePipeline)?.id
 
   const setPipelineName = (name: string) => {
     if (name.includes('/')) { 
@@ -212,7 +220,16 @@ export default function PipelineAppBar() {
       pipeline: flowClone,
       timestamp: flowClone?.timestamp
     };
+    console.log("SCOOPY DOOOO: " + pipelineId);//The
+    if (pipelineId != undefined) {
+      try {
+        const deleted = await deletePipeline(selectedOrg.id, selectedRepo.id, pipelineId.split("-").slice(1).join("-"))
+      } catch {
+
+      }
+    }
     const pipeline = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
+    dispatch(updatePipelineId("pipeline-"+pipeline.id));
   }
 
   return (

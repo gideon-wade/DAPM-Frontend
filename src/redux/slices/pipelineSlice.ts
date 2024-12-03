@@ -1,7 +1,16 @@
-import { addEdge as addFlowEdge, applyEdgeChanges, applyNodeChanges, Connection, Edge, EdgeChange, MarkerType, Node, NodeChange } from "reactflow";
+import {
+  addEdge as addFlowEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  Connection,
+  Edge,
+  EdgeChange,
+  Node,
+  NodeChange
+} from "reactflow";
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { EdgeData, NodeData, NodeState, PipelineData, PipelineState } from "../states/pipelineState";
+import {createSlice, PayloadAction} from '@reduxjs/toolkit'
+import {EdgeData, NodeData, NodeState, PipelineData, PipelineState} from "../states/pipelineState";
 
 export const initialState: PipelineState = {
   pipelines: [],
@@ -92,6 +101,12 @@ const pipelineSlice = createSlice({
       var activePipeline = state.pipelines.find(pipeline => pipeline.id === state.activePipelineId)
       if (!activePipeline) return
       activePipeline!.name = payload
+    },
+    updatePipelineId: (state, { payload }: PayloadAction<string>) => {
+      var activePipeline = state.pipelines.find(pipeline => pipeline.id === state.activePipelineId)
+      if (!activePipeline) return
+      activePipeline!.id = payload
+      state.activePipelineId = payload
     },
 
     updatePipelineState: (state, { payload }: PayloadAction<number>) => {
@@ -246,6 +261,7 @@ export const {
   updateSourceHandle,
   updateTargetHandle,
   updatePipelineName,
+  updatePipelineId,
   updatePipelineState,
   addHandle, 
   updateNode, 

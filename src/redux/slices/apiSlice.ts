@@ -1,8 +1,8 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 
-import { ApiState, Organization, Repository, Resource } from "../states/apiState";
-import { fetchOrganisations, fetchOrganisationRepositories, fetchRepositoryResources } from "../../services/backendAPI";
-import { NoAssociatedRepositoriesToOrganizationsError, NoCurrentOrganizationsError } from "../../utils/Errors";
+import {ApiState, Organization, Repository, Resource} from "../states/apiState";
+import {fetchOrganizationRepositories, fetchOrganizations, fetchRepositoryResources} from "../../services/backendAPI";
+import {NoAssociatedRepositoriesToOrganizationsError} from "../../utils/Errors";
 
 export const initialState: ApiState = {
     organizations: [],
@@ -65,7 +65,7 @@ export const organizationThunk = createAsyncThunk<
 >("api/fetchOrganizations", async (_, thunkAPI) => {
 
   try {
-    const organizations = await fetchOrganisations(); // Fetch organizations from the backend API
+    const organizations = await fetchOrganizations(); // Fetch organizations from the backend API
     return organizations.result; // Return data fetched from the API
   } catch (error) {
     console.log("organization thunk error")
@@ -81,7 +81,7 @@ export const repositoryThunk = createAsyncThunk<
   try {
     const repositories = [];
       for (const organization of organizations) {
-        const repos = await fetchOrganisationRepositories(organization.id);
+        const repos = await fetchOrganizationRepositories(organization.id);
         if (repos === undefined) throw new NoAssociatedRepositoriesToOrganizationsError(organization.id);
         repositories.push(...repos.result.repositories);
       }

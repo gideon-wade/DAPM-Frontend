@@ -1,16 +1,27 @@
-import React, { useCallback, useEffect, useState, MouseEvent } from "react"
+import React, {MouseEvent, useCallback, useEffect, useState} from "react"
 import ReactFlow, {
-  Node,
   Background,
   BackgroundVariant,
-  useReactFlow,
-  useOnSelectionChange,
-  Edge,
   Connection,
-  getOutgoers
+  Edge,
+  getOutgoers,
+  Node,
+  useOnSelectionChange,
+  useReactFlow
 } from "reactflow";
 
-import { onNodesChange, onEdgesChange, onConnect, addNode, removeNode, setNodes, removeEdge, undo, createSnapShot, redo } from "../../redux/slices/pipelineSlice";
+import {
+  addNode,
+  createSnapShot,
+  onConnect,
+  onEdgesChange,
+  onNodesChange,
+  redo,
+  removeEdge,
+  removeNode,
+  setNodes,
+  undo
+} from "../../redux/slices/pipelineSlice";
 
 import CustomNode from "./Nodes/CustomNode";
 
@@ -18,18 +29,18 @@ import "reactflow/dist/style.css";
 import styled from "styled-components";
 import DataSinkNode from "./Nodes/DataSinkNode";
 import ConfigurationSidebar from "./ConfigurationSidebar";
-import { useDispatch, useSelector } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import OrganizationNode from "./Nodes/OrganizationNode";
 
 import 'reactflow/dist/style.css';
 import '@reactflow/node-resizer/dist/style.css';
 
-import { getNodePositionInsideParent, sortNodes } from "./utils";
-import { BaseTemplateData, NodeData, OperatorNodeData, OperatorTemplateData } from "../../redux/states/pipelineState";
+import {getNodePositionInsideParent, sortNodes} from "./utils";
+import {BaseTemplateData, NodeData, OperatorTemplateData} from "../../redux/states/pipelineState";
 import DataSourceNode from "./Nodes/DataSourceNode";
-import { getEdges, getNodes } from "../../redux/selectors";
-import { DefaultEdge } from "./Edges/DefaultEdge";
-import { v4 as uuidv4 } from "uuid";
+import {getEdges, getNodes} from "../../redux/selectors";
+import {DefaultEdge} from "./Edges/DefaultEdge";
+import {v4 as uuidv4} from "uuid";
 
 const nodeTypes = {
   operator: CustomNode,
