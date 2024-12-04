@@ -323,6 +323,12 @@ export default function AutoGrid() {
             ))}
           </Grid>
         </DndProvider>
+        <ResourceUpload
+            orgs={organizations}
+            reps={repositories}
+            open={resourceUploadOpen}
+            onClose={handleResourceUploadClose}
+        />
       </>
     );
   };
