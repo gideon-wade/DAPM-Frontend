@@ -301,6 +301,13 @@ export default function AutoGrid() {
             >
               Create Folder
             </Button>
+            <Button
+                variant="contained"
+                startIcon={<UploadFile />}
+                onClick={handleResourceUploadOpen}
+                sx={{ backgroundColor: "#bbb", "&:hover": { backgroundColor: "#eee" }, marginLeft: '10px' }}>
+              Upload Resource
+            </Button>
           </Box>
           <Box></Box>
         </Box>
