@@ -37,13 +37,13 @@ export interface EdgeData {
 }
 
 export interface NodeData {
-  label: string;
+  label: string;  
   width: number;
   height: number;
   templateData: BaseTemplateData;
   instantiationData: BaseInstantiationData;
+  errorMsg: string;
 }
-
 export interface DataSourceNodeData extends NodeData {
   templateData: DataSourceTemplateData;
   instantiationData: DataSourceInstantiationData;
@@ -117,3 +117,7 @@ export interface HandleData {
   id: string,
 }
 
+export interface FlowData {
+  nodes: Array<Node<DataSourceNodeData | DataSinkNodeData | OperatorNodeData | OrganizationNodeData>>;
+  edges: Array<Edge>;
+}

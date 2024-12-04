@@ -1,24 +1,18 @@
-import {useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {useDispatch, useSelector} from "react-redux";
-import {Node} from "reactflow";
-import {AppBar, Box, Button, TextField, Toolbar, Typography} from "@mui/material";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {Node } from "reactflow";
+import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, FormControl, FormLabel, Select, MenuItem } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
 
-import {getActiveFlowData, getActivePipeline} from "../../redux/selectors";
-import {updatePipelineId, updatePipelineName} from "../../redux/slices/pipelineSlice";
-import {DataSinkNodeData, DataSourceNodeData, OperatorNodeData} from "../../redux/states/pipelineState";
-import {
-  deletePipeline,
-  fetchPipeline,
-  fetchRepositoryPipelines,
-  putCommandStart,
-  putExecution,
-  putPipeline
-} from "../../services/backendAPI";
-import {getOrganizations, getRepositories} from "../../redux/selectors/apiSelector";
-import {getHandleId, getNodeId} from "./Flow";
+import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
+import { updatePipelineName, updatePipelineId, setFlowdata } from "../../redux/slices/pipelineSlice";
+import { DataSinkNodeData, DataSourceNodeData, FlowData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
+import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
+import { getHandleId, getNodeId } from "./Flow";
+import { validate } from "./validation/validation";
+import { deletePipeline, putCommandStart, putExecution, putPipeline } from "../../services/backendAPI";
 import { toast } from 'react-toastify';
 
 export default function PipelineAppBar() {
@@ -27,6 +21,38 @@ export default function PipelineAppBar() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
+
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
+  const startPipeline = async () => {
+    const loadingToast = toast.loading("Deploying pipeline: " + pipelineName);
+    setShowErrorPopup(false);
+    // Continue with the pipeline execution
+    const selectedOrg = organizations[0];
+    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0];
+    let pipelineId;
+    try {
+      pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestDataScope);
+    } catch (e) {
+      toast.update(loadingToast, {
+        render: "There was an error deploying the pipeline",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId);
+    await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId);
+    toast.update(loadingToast, {
+      render: "Deployed pipeline: " + pipelineName,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
+  };
+
 
   const STATUS = {
     UNDEPLOYED: "Undeployed",
@@ -45,7 +71,7 @@ export default function PipelineAppBar() {
 
   const organizations = useSelector(getOrganizations)
   const repositories = useSelector(getRepositories)
-
+  let requestDataScope = {}
   const pipelineName = useSelector(getActivePipeline)?.name
   const pipelineId = useSelector(getActivePipeline)?.id
 
@@ -62,7 +88,6 @@ export default function PipelineAppBar() {
   console.log("FlowData: ", flowData);
   
   const generateJson = async () => {
-    const loadingToast = toast.loading("Deploying pipeline: " + pipelineName);
     var edges = flowData!.edges.map(edge => {
       return { sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle }
     })
@@ -80,8 +105,7 @@ export default function PipelineAppBar() {
             ...originalDataSink?.data,
             templateData: { sourceHandles: [], targetHandles: [{ id: newTarget }] },
             instantiationData: {
-              resource: {
-                //...originalDataSink?.data?.instantiationData.repository, 
+              resource: { 
                 organizationId: originalDataSink?.data?.instantiationData.repository?.organizationId,
                 repositoryId: originalDataSink?.data?.instantiationData.repository?.id,
                 name: edge?.data?.filename
@@ -140,35 +164,17 @@ export default function PipelineAppBar() {
       
    
     }
-    
-    console.log("requestdata",JSON.stringify(requestData))
-
-    const selectedOrg = organizations[0]
-    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
-
-    const pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
-    const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
-    await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
-    toast.update(loadingToast, {
-      render: "Deployed pipeline: " + pipelineName,
-      type: "success",
-      isLoading: false,
-      autoClose: 3000,
-    });
+    requestDataScope = requestData
+    const errors = validate(flowData as FlowData).map(error => error[0]);
+    console.log("Errors: ", errors);
+    if (errors.length > 0) {
+      setErrors(errors);
+      setShowErrorPopup(true);
+      return
+    }
+    startPipeline()
   }
 
-  const getPipelines = async () => {
-    const selectedOrg = organizations[0]
-    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
-
-    const response = await fetchRepositoryPipelines(selectedOrg.id, selectedRepo.id)
-  }
-  const getAPipeline = async (pipelineId: string) => {
-    const selectedOrg = organizations[0]
-    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
-
-    const response = await fetchPipeline(selectedOrg.id, selectedRepo.id, pipelineId)
-  }
 
   const savePipeline = async () => {
     const loadingToast = toast.loading("Saving pipeline: " + pipelineName);
@@ -206,43 +212,132 @@ export default function PipelineAppBar() {
     });
   }
 
+  const uploadPipeline = async () => {
+    let selectedPipeline: HTMLInputElement = document.getElementById("pipelineSelectInput") as HTMLInputElement
+
+    if (selectedPipeline!.files!.length > 0) {
+      let file = selectedPipeline!.files![0];
+      let text = await file.text();
+      //console.log(text);
+      dispatch(setFlowdata(JSON.parse(text)));
+    }
+  }
+
+  const downloadPipeline = async () => {
+
+    const selectedOrg = organizations[0]
+    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
+
+    let flowClone = structuredClone(flowData);
+
+    flowClone?.nodes?.forEach((node: Node) => {
+      node.selected = false;
+      node.dragging = false;
+    });
+    
+    let tmp = document.createElement("a");
+    tmp.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(flowClone));
+    tmp.setAttribute('download', pipelineId+".json");
+    tmp.click();
+
+  }
+
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Handle form submission
+  };
+  const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+  const dataTypes = ["Type1", "Type2", "Type3"];
+
   return (
     <AppBar position="fixed">
       <Toolbar sx={{ flexGrow: 1 }}>
-        <Button onClick={() => navigate('/')}>
-          <ArrowBackIosNewIcon sx={{ color: "white" }} />
-        </Button>
-        <Box sx={{ width: '100%', textAlign: 'center' }}>
-          {isEditing ? (
-            <TextField
-              value={pipelineName}
-              onChange={(event) => setPipelineName(event?.target.value as string)}
-              autoFocus
-              onBlur={handleFinishEditing}
-              inputProps={{ style: { textAlign: 'center', width: 'auto' } }}
-            />
-          ) : (
-            <Box onClick={handleStartEditing} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', width: '100%' }}>
-              <Typography>{pipelineName}</Typography>
-              <EditIcon sx={{ paddingLeft: '10px' }} />
-            </Box>
-          )}
+      <Button onClick={() => navigate('/')}>
+        <ArrowBackIosNewIcon sx={{ color: "white" }} />
+      </Button>
+      <Box sx={{ width: '100%', textAlign: 'center' }}>
+        {isEditing ? (
+        <TextField
+          value={pipelineName}
+          onChange={(event) => setPipelineName(event?.target.value as string)}
+          autoFocus
+          onBlur={handleFinishEditing}
+          inputProps={{ style: { textAlign: 'center', width: 'auto' } }}
+        />
+        ) : (
+        <Box onClick={handleStartEditing} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', width: '100%' }}>
+          <Typography>{pipelineName}</Typography>
+          <EditIcon sx={{ paddingLeft: '10px' }} />
         </Box>
-        <Typography variant="body1" sx={{ color: "white" }}>
-          Status: {status}
-        </Typography>
-        <Button onClick={() => savePipeline()}>
-          <Typography variant="body1" sx={{ color: "white" }}>Save pipeline</Typography>
-        </Button>
-        
-        <Button onClick={() => status != STATUS.DEPLOYED ? generateJson() : generateJson()}>
-          <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
-        </Button>
-       
-       
-        
-        
+        )}
+      </Box>
+      <Typography variant="body1" sx={{ color: "white" }}>
+        Status: {status}
+      </Typography>
+      <Button>
+        <label htmlFor="pipelineSelectInput">
+        <Typography variant="body1" sx={{ color: "white" }}>Upload pipeline</Typography>
+        <input id="pipelineSelectInput" type="file" style={{ display: 'none' }} onChange={() => uploadPipeline()}/>
+        </label>
+      </Button>
+      <Button onClick={() => downloadPipeline()}>
+        <Typography variant="body1" sx={{ color: "white" }}>Download pipeline</Typography>
+      </Button>
+      <Button onClick={() => savePipeline()}>
+        <Typography variant="body1" sx={{ color: "white" }}>Save pipeline</Typography>
+      </Button>
+      
+      <Button onClick={() => status != STATUS.DEPLOYED ? generateJson() : generateJson()}>
+        <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
+      </Button>
+      {showErrorPopup && (
+      <Modal
+        open={showErrorPopup}
+        onClose={() => setShowErrorPopup(false)}
+        aria-labelledby="modal-create-repository"
+        aria-describedby="modal-create-repository"
+      >
+        <Box sx={style}>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Typography id="modal-modal-title" variant="h6" component="h2" sx={{ color: "white" }}>
+              Errors
+            </Typography>
+            <ul>
+              {errors.map((error, index) => (
+                <li key={index} style={{ color: "white" }}>{error}</li>
+              ))}
+            </ul>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
+              <Button onClick={() => setShowErrorPopup(false)} sx={{ backgroundColor: "gray", padding: "6px 12px", color: "white" }}>
+                Close
+              </Button>
+              <Button onClick={startPipeline} sx={{ backgroundColor: "gray", padding: "6px 12px", color: "white" }}>
+                Continue Anyway
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Modal>
+    )}
       </Toolbar>
     </AppBar>
-  )
-}
+        )
+      }
+       
+        
+        
+
+
