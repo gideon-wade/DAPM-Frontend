@@ -1,8 +1,8 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 
-import { ApiState, Organization, Repository, Resource } from "../states/apiState";
-import { fetchOrganizations, fetchOrganizationRepositories, fetchRepositoryResources } from "../../services/backendAPI";
-import { NoAssociatedRepositoriesToOrganizationsError, NoCurrentOrganizationsError } from "../../utils/Errors";
+import {ApiState, Organization, Repository, Resource} from "../states/apiState";
+import {fetchOrganizationRepositories, fetchOrganizations, fetchRepositoryResources} from "../../services/backendAPI";
+import {NoAssociatedRepositoriesToOrganizationsError} from "../../utils/Errors";
 
 export const initialState: ApiState = {
     organizations: [],

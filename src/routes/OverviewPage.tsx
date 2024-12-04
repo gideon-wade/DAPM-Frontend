@@ -1,5 +1,5 @@
-import { Box } from "@mui/material";
-import { useAuth0, withAuthenticationRequired } from '@auth0/auth0-react';
+import {Box} from "@mui/material";
+import {useAuth0, withAuthenticationRequired} from '@auth0/auth0-react';
 
 import OrganizationSidebar from "../components/OverviewPage/OrganizationSidebar";
 import PipelineGrid from "../components/OverviewPage/PipelineGrid";

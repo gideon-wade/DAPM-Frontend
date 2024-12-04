@@ -1,7 +1,16 @@
-import { addEdge as addFlowEdge, applyEdgeChanges, applyNodeChanges, Connection, Edge, EdgeChange, MarkerType, Node, NodeChange } from "reactflow";
+import {
+  addEdge as addFlowEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  Connection,
+  Edge,
+  EdgeChange,
+  Node,
+  NodeChange
+} from "reactflow";
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { EdgeData, NodeData, NodeState, PipelineData, PipelineState } from "../states/pipelineState";
+import {createSlice, PayloadAction} from '@reduxjs/toolkit'
+import {EdgeData, NodeData, NodeState, PipelineData, PipelineState} from "../states/pipelineState";
 
 export const initialState: PipelineState = {
   pipelines: [],
@@ -102,6 +111,12 @@ const pipelineSlice = createSlice({
     addHandle: (state, { payload }: PayloadAction<string>) => {
       var activeFlowData = state.pipelines.find(pipeline => pipeline.id === state.activePipelineId)?.pipeline
       activeFlowData?.nodes.find(node => node.id === payload)?.data?.templateData?.sourceHandles.push({ type: 'source', id: "1" })
+    },
+    setFlowdata: (state, { payload }: PayloadAction<NodeState | undefined>) => {
+      if (!payload) return
+      var activePipeline = state.pipelines.find(pipeline => pipeline.id === state.activePipelineId)
+      if (!activePipeline) return
+      activePipeline.pipeline = payload;
     },
     updateSourceHandle: (state, { payload }: PayloadAction<{ nodeId?: string, handleId?: string, newType?: string }>) => {
       const { nodeId, handleId, newType } = payload;
@@ -241,6 +256,7 @@ export const {
   createSnapShot,
 
   // actions for the active pipeline
+  setFlowdata,
   updateSourceHandle,
   updateTargetHandle,
   updatePipelineName, 

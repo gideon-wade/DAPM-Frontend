@@ -1,14 +1,6 @@
-import {
-    getNodePositionWithOrigin,
-    rectToBox,
-    type Node,
-    type NodeOrigin,
-    type Rect,
-    boxToRect,
-    Box,
-  } from 'reactflow';
-  
-  // we have to make sure that parent nodes are rendered before their children
+import {Box, boxToRect, getNodePositionWithOrigin, type Node, type NodeOrigin, type Rect, rectToBox,} from 'reactflow';
+
+// we have to make sure that parent nodes are rendered before their children
   export const sortNodes = (a: Node, b: Node): number => {
     if (a.type === b.type) {
       return 0;

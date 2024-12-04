@@ -1,18 +1,17 @@
 import * as React from 'react';
+import {useRef, useState} from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
-import { CardActionArea, IconButton, TextField } from '@mui/material';
+import {CardActionArea, IconButton, TextField} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setActivePipeline } from '../../redux/slices/pipelineSlice';
-import { useDrag, useDrop } from 'react-dnd';
+import {useNavigate} from 'react-router-dom';
+import {useDispatch} from 'react-redux';
+import {setActivePipeline, updatePipelineName} from '../../redux/slices/pipelineSlice';
+import {useDrag, useDrop} from 'react-dnd';
 import SourceIcon from '@mui/icons-material/Source';
 import EditIcon from '@mui/icons-material/Edit';
-import { useState, useRef } from "react";
-import { updatePipelineName } from "../../redux/slices/pipelineSlice";
 
 const ItemType = 'CARD';
 

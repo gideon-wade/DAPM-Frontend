@@ -1,6 +1,6 @@
-import { Box } from "@mui/material";
-import { Controls, ReactFlowProvider } from "reactflow";
-import { withAuthenticationRequired } from "@auth0/auth0-react";
+import {Box} from "@mui/material";
+import {Controls, ReactFlowProvider} from "reactflow";
+import {withAuthenticationRequired} from "@auth0/auth0-react";
 
 import Flow from "../components/PipeLineComposer/Flow";
 import Sidebar from "../components/PipeLineComposer/NodesSidebar";

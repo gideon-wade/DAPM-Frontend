@@ -1,12 +1,10 @@
-import { Box, Typography } from '@mui/material';
-import { memo } from 'react';
-import { useSelector } from 'react-redux';
-import {
-  NodeProps,
-  NodeResizer} from 'reactflow';
-import { getNodes } from '../../../redux/selectors';
-import { getRelativeNodesBounds } from '../utils';
-import { OrganizationNodeData } from '../../../redux/states/pipelineState';
+import {Box, Typography} from '@mui/material';
+import {memo} from 'react';
+import {useSelector} from 'react-redux';
+import {NodeProps, NodeResizer} from 'reactflow';
+import {getNodes} from '../../../redux/selectors';
+import {getRelativeNodesBounds} from '../utils';
+import {OrganizationNodeData} from '../../../redux/states/pipelineState';
 
 
 function OrganizationNode({ data, id, selected }: NodeProps<OrganizationNodeData>) {
@@ -23,15 +21,22 @@ function OrganizationNode({ data, id, selected }: NodeProps<OrganizationNodeData
   const minHeight = rect.y + rect.height
   
   return (
-    <Box sx={{backgroundColor: "#ffffff10", height: "100%"}}>
+    <Box sx={{backgroundColor:'#ffffff10', height: "100%"}}>
       <NodeResizer
         lineStyle={lineStyle}
         minHeight={minHeight}
         minWidth={minWidth}
         isVisible={true}
       />
-      <Typography sx={{color: "white"}}>{data?.instantiationData.organization?.name ?? '-'}</Typography>
       
+      {(data?.errorMsg) ? (
+        <div className="tooltip">
+          {<Typography sx={{color: "white"}}>{data?.instantiationData.organization?.name ?? '-'}</Typography>}
+          <span className="tooltiptext">{data?.errorMsg}</span>
+        </div>
+      ) : (
+        <Typography sx={{color: "white"}}>{data?.instantiationData.organization?.name ?? '-'}</Typography>
+      )}
     </Box>
   );
 }

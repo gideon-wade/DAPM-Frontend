@@ -1,5 +1,5 @@
-import { Edge, Node } from 'reactflow';
-import { Organization, Repository, Resource } from './apiState';
+import {Edge, Node} from 'reactflow';
+import {Organization, Repository, Resource} from './apiState';
 
 export interface PipelineState {
   pipelines: PipelineData[]
@@ -9,12 +9,12 @@ export interface PipelineState {
 export interface HistoryData {
   past: HistoryItem[];
   future: HistoryItem[];
-};
+}
 
 export interface HistoryItem {
   nodes: Node<NodeData>[];
   edges: Edge<EdgeData>[];
-};
+}
 
 export interface PipelineData {
     id: string;
@@ -37,13 +37,13 @@ export interface EdgeData {
 }
 
 export interface NodeData {
-  label: string;
+  label: string;  
   width: number;
   height: number;
   templateData: BaseTemplateData;
   instantiationData: BaseInstantiationData;
+  errorMsg: string;
 }
-
 export interface DataSourceNodeData extends NodeData {
   templateData: DataSourceTemplateData;
   instantiationData: DataSourceInstantiationData;
@@ -117,3 +117,7 @@ export interface HandleData {
   id: string,
 }
 
+export interface FlowData {
+  nodes: Array<Node<DataSourceNodeData | DataSinkNodeData | OperatorNodeData | OrganizationNodeData>>;
+  edges: Array<Edge>;
+}

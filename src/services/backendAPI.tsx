@@ -72,7 +72,7 @@ const getData = async (ticketId: string): Promise<any> => {
             if (data.status) {
                 return data;
             }
-            await delay(100); // Wait for 0.1 second before retrying
+            await delay(2000); // Wait for 2 second before retrying
         } catch (error) {
             if (retries === maxRetries - 1) {
                 throw new Error('Max retries reached');
@@ -93,7 +93,7 @@ const getFile = async (ticketId: string): Promise<any> => {
             if (data.status) {
                 return data;
             }
-            await delay(3000); // Wait for 3 second before retrying
+            await delay(2000); // Wait for 2 second before retrying
         } catch (error) {
             if (retries === maxRetries - 1) {
                 throw new Error('Max retries reached');

@@ -1,16 +1,19 @@
-import { ThemeProvider, createTheme } from "@mui/material";
+import {createTheme, ThemeProvider} from "@mui/material";
 
 import "./index.css";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
+import {Provider} from "react-redux";
+import {configureStore} from "@reduxjs/toolkit";
 import rootReducer from "./redux/slices";
+import React from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-import { persistReducer } from 'redux-persist'
+import {persistReducer} from 'redux-persist'
 import storage from 'redux-persist/lib/storage' // defaults to localStorage for web
-import { RouterProvider, createBrowserRouter, createHashRouter  } from "react-router-dom";
+import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import PipelineComposer from "./routes/PipeLineComposer";
 import UserPage from "./routes/OverviewPage";
-import { loadState, saveState } from "./redux/browser-storage";
+import {loadState, saveState} from "./redux/browser-storage";
 
 // Configure redux-persist
 const persistConfig = {
@@ -60,6 +63,17 @@ export default function App() {
         <Provider store={store}>
           <RouterProvider router={router} />
         </Provider>
+        <ToastContainer
+            position="bottom-right"
+            autoClose={3000} // Close after 3 seconds
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            pauseOnHover
+            theme="dark"
+        />
       </div>
     </ThemeProvider>
   );

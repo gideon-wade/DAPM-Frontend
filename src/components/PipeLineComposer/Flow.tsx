@@ -1,16 +1,27 @@
-import React, { useCallback, useEffect, useState, MouseEvent } from "react"
+import React, {MouseEvent, useCallback, useEffect, useState} from "react"
 import ReactFlow, {
-  Node,
   Background,
   BackgroundVariant,
-  useReactFlow,
-  useOnSelectionChange,
-  Edge,
   Connection,
-  getOutgoers
+  Edge,
+  getOutgoers,
+  Node,
+  useOnSelectionChange,
+  useReactFlow
 } from "reactflow";
 
-import { onNodesChange, onEdgesChange, onConnect, addNode, removeNode, setNodes, removeEdge, undo, createSnapShot, redo } from "../../redux/slices/pipelineSlice";
+import {
+  addNode,
+  createSnapShot,
+  onConnect,
+  onEdgesChange,
+  onNodesChange,
+  redo,
+  removeEdge,
+  removeNode,
+  setNodes,
+  undo
+} from "../../redux/slices/pipelineSlice";
 
 import CustomNode from "./Nodes/CustomNode";
 
@@ -18,24 +29,24 @@ import "reactflow/dist/style.css";
 import styled from "styled-components";
 import DataSinkNode from "./Nodes/DataSinkNode";
 import ConfigurationSidebar from "./ConfigurationSidebar";
-import { useDispatch, useSelector } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import OrganizationNode from "./Nodes/OrganizationNode";
 
 import 'reactflow/dist/style.css';
 import '@reactflow/node-resizer/dist/style.css';
 
 import { getNodePositionInsideParent, sortNodes } from "./utils";
-import { BaseTemplateData, NodeData, OperatorNodeData, OperatorTemplateData } from "../../redux/states/pipelineState";
+import { BaseTemplateData, FlowData, NodeData, OperatorNodeData, OperatorTemplateData } from "../../redux/states/pipelineState";
 import DataSourceNode from "./Nodes/DataSourceNode";
 import { getEdges, getNodes } from "../../redux/selectors";
 import { DefaultEdge } from "./Edges/DefaultEdge";
+import { validate } from "./validation/validation";
 import { v4 as uuidv4 } from "uuid";
-
 const nodeTypes = {
   operator: CustomNode,
   dataSource: DataSourceNode,
   dataSink: DataSinkNode,
-  organization: OrganizationNode
+  organization: OrganizationNode,
 };
 
 const edgeTypes = {
@@ -63,6 +74,55 @@ const BasicFlow = () => {
   const [selectedDeletables, setSelectedDeletables] = useState<Array<Node<NodeData> | Edge | undefined>>([]);
 
   const connectionLineStyle = { stroke: 'white', strokeOpacity: 1, strokeWidth: "1px" }
+
+  const [prevNodes, setPrevNodes] = useState(nodes);
+
+
+  useEffect(() => {
+    const errors = validate({ nodes, edges } as FlowData);
+
+    // find the nodes in the errors and set the hasError property to true
+    const nextNodes = nodes?.map(node => {
+      const error = errors.find(error => error[1] === node.id);
+      if (error) {
+        return {
+          ...node,
+          hasError: true,
+          data: {
+            ...node.data,
+            errorMsg: error[0],
+          },
+          style: {
+            ...node.style,
+            backgroundColor: node.type == "organization" ? '#BB000033' : '#BB0000',
+          },
+        };
+      } else {
+        return {
+          ...node,
+          hasError: false,
+          data: {
+            ...node.data,
+            errorMsg: '', // Clear the error message if no error
+          },
+          style: {
+            ...node.style,
+            backgroundColor: node.type != "organization" ? '#556677' : "",
+          },
+        };
+      }
+    });
+
+    if (JSON.stringify(nextNodes) !== JSON.stringify(nodes) && nextNodes) {
+      dispatch(setNodes(nextNodes));
+    }
+  }, [nodes, edges, dispatch]); // Dependencies array
+
+
+ 
+
+
+
 
   useOnSelectionChange({
     onChange: ({ nodes: selectedNodes, edges: selectedEdges }) => {
@@ -112,7 +172,6 @@ const BasicFlow = () => {
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-
       const { type, data, algorithmType } = JSON.parse(event.dataTransfer.getData('application/reactflow'));
 
       // check if the dropped element is valid
@@ -180,6 +239,7 @@ const BasicFlow = () => {
           instantiationData: {},
           width: 400,
           height: 200,
+          errorMsg: '',
         },
       };
 
@@ -356,5 +416,4 @@ const BasicFlow = () => {
     </ReactFlowStyled>
   );
 };
-
 export default BasicFlow;

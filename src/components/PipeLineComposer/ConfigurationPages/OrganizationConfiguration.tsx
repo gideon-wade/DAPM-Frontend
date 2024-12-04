@@ -1,13 +1,12 @@
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { Node } from "reactflow";
-import { Box, InputLabel, MenuItem, Select } from '@mui/material';
-import { NodeData, OrganizationNodeData } from '../../../redux/states/pipelineState';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateNode } from '../../../redux/slices/pipelineSlice';
-import { getOrganizations } from '../../../redux/selectors/apiSelector';
-import { getNodes } from '../../../redux/selectors';
-import { useEffect } from 'react';
+import {Node} from "reactflow";
+import {Box, InputLabel, MenuItem, Select} from '@mui/material';
+import {NodeData, OrganizationNodeData} from '../../../redux/states/pipelineState';
+import {useDispatch, useSelector} from 'react-redux';
+import {updateNode} from '../../../redux/slices/pipelineSlice';
+import {getOrganizations} from '../../../redux/selectors/apiSelector';
+import {getNodes} from '../../../redux/selectors';
 
 
 export interface AlgorithmConfugurationProps {
@@ -18,7 +17,8 @@ export default function DataSinkConfiguration({ nodeprop }: AlgorithmConfugurati
 
   const dispatch = useDispatch()
 
-  const node = useSelector(getNodes)?.find(node => node.id === nodeprop?.id) as Node<OrganizationNodeData> | undefined;
+  const node = useSelector(getNodes)?.find(node =>
+    node.id === nodeprop?.id) as Node<OrganizationNodeData> | undefined;
 
   const organizations = useSelector(getOrganizations);
 
@@ -40,6 +40,7 @@ export default function DataSinkConfiguration({ nodeprop }: AlgorithmConfugurati
               value={node?.data.instantiationData.organization?.id}
               sx={{ width: '100%' }}
               onChange={(event) => setOrgData(event?.target.value)}
+              variant={"standard"}
             >
               {organizations.map((org) => <MenuItem value={org.id}>{org.name}</MenuItem>)}
             </Select>
