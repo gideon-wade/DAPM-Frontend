@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Edge, Node } from "reactflow";
-import { AppBar, Box, Button, TextField, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, FormControl, FormLabel, Select, MenuItem } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -22,6 +22,26 @@ export default function PipelineAppBar() {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
+  const handleContinueAnyway = async () => {
+    setShowErrorPopup(false);
+    // Continue with the pipeline execution
+    const selectedOrg = organizations[0];
+    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0];
+    let pipelineId;
+    try {
+      pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestDataScope);
+    } catch (e) {
+      alert("There was an error deploying the pipeline");
+      return;
+    }
+
+    const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId);
+    await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId);
+  };
+
+
   const STATUS = {
     UNDEPLOYED: "Undeployed",
     DEPLOYED: "Deployed",
@@ -39,7 +59,7 @@ export default function PipelineAppBar() {
 
   const organizations = useSelector(getOrganizations)
   const repositories = useSelector(getRepositories)
-
+  let requestDataScope = {}
   const pipelineName = useSelector(getActivePipeline)?.name
   const pipelineId = useSelector(getActivePipeline)?.id
 
@@ -132,10 +152,12 @@ export default function PipelineAppBar() {
       
    
     }
-    
-    const errors = validate(flowData as FlowData)
+    requestDataScope = requestData
+    const errors = validate(flowData as FlowData).map(error => error[0]);
+    console.log("Errors: ", errors);
     if (errors.length > 0) {
-      alert(errors.join("\n"))
+      setErrors(errors);
+      setShowErrorPopup(true);
       return
     }
     const selectedOrg = organizations[0]
@@ -227,56 +249,102 @@ export default function PipelineAppBar() {
 
   }
 
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Handle form submission
+  };
+  const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+  const dataTypes = ["Type1", "Type2", "Type3"];
+
   return (
     <AppBar position="fixed">
       <Toolbar sx={{ flexGrow: 1 }}>
-        <Button onClick={() => navigate('/')}>
-          <ArrowBackIosNewIcon sx={{ color: "white" }} />
-        </Button>
-        <Box sx={{ width: '100%', textAlign: 'center' }}>
-          {isEditing ? (
-            <TextField
-              value={pipelineName}
-              onChange={(event) => setPipelineName(event?.target.value as string)}
-              autoFocus
-              onBlur={handleFinishEditing}
-              inputProps={{ style: { textAlign: 'center', width: 'auto' } }}
-            />
-          ) : (
-            <Box onClick={handleStartEditing} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', width: '100%' }}>
-              <Typography>{pipelineName}</Typography>
-              <EditIcon sx={{ paddingLeft: '10px' }} />
-            </Box>
-          )}
+      <Button onClick={() => navigate('/')}>
+        <ArrowBackIosNewIcon sx={{ color: "white" }} />
+      </Button>
+      <Box sx={{ width: '100%', textAlign: 'center' }}>
+        {isEditing ? (
+        <TextField
+          value={pipelineName}
+          onChange={(event) => setPipelineName(event?.target.value as string)}
+          autoFocus
+          onBlur={handleFinishEditing}
+          inputProps={{ style: { textAlign: 'center', width: 'auto' } }}
+        />
+        ) : (
+        <Box onClick={handleStartEditing} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', width: '100%' }}>
+          <Typography>{pipelineName}</Typography>
+          <EditIcon sx={{ paddingLeft: '10px' }} />
         </Box>
-        <Typography variant="body1" sx={{ color: "white" }}>
-          Status: {status}
-        </Typography>
-        <Button>
-          <label htmlFor="pipelineSelectInput">
-            <Typography variant="body1" sx={{ color: "white" }}>Upload pipeline</Typography>
-            <input id="pipelineSelectInput" type="file" style={{ display: 'none' }} onChange={() => uploadPipeline()}/>
-          </label>
-        </Button>
-        <Button onClick={() => downloadPipeline()}>
-          <Typography variant="body1" sx={{ color: "white" }}>Download pipeline</Typography>
-        </Button>
-        <Button onClick={() => savePipeline()}>
-          <Typography variant="body1" sx={{ color: "white" }}>Save pipeline</Typography>
-        </Button>
-        
-        <Button onClick={() => status != STATUS.DEPLOYED ? generateJson() : generateJson()}>
-          <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
-        </Button>
-       
-       
-        
-        
+        )}
+      </Box>
+      <Typography variant="body1" sx={{ color: "white" }}>
+        Status: {status}
+      </Typography>
+      <Button>
+        <label htmlFor="pipelineSelectInput">
+        <Typography variant="body1" sx={{ color: "white" }}>Upload pipeline</Typography>
+        <input id="pipelineSelectInput" type="file" style={{ display: 'none' }} onChange={() => uploadPipeline()}/>
+        </label>
+      </Button>
+      <Button onClick={() => downloadPipeline()}>
+        <Typography variant="body1" sx={{ color: "white" }}>Download pipeline</Typography>
+      </Button>
+      <Button onClick={() => savePipeline()}>
+        <Typography variant="body1" sx={{ color: "white" }}>Save pipeline</Typography>
+      </Button>
+      
+      <Button onClick={() => status != STATUS.DEPLOYED ? generateJson() : generateJson()}>
+        <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
+      </Button>
+      {showErrorPopup && (
+      <Modal
+        open={showErrorPopup}
+        onClose={() => setShowErrorPopup(false)}
+        aria-labelledby="modal-create-repository"
+        aria-describedby="modal-create-repository"
+      >
+        <Box sx={style}>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Typography id="modal-modal-title" variant="h6" component="h2" sx={{ color: "white" }}>
+              Errors
+            </Typography>
+            <ul>
+              {errors.map((error, index) => (
+                <li key={index} style={{ color: "white" }}>{error}</li>
+              ))}
+            </ul>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
+              <Button onClick={() => setShowErrorPopup(false)} sx={{ backgroundColor: "gray", padding: "6px 12px", color: "white" }}>
+                Close
+              </Button>
+              <Button onClick={handleContinueAnyway} sx={{ backgroundColor: "gray", padding: "6px 12px", color: "white" }}>
+                Continue Anyway
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Modal>
+    )}
       </Toolbar>
     </AppBar>
-  )
-}
-
-
+        )
+      }
+       
+        
+        
 
 
