@@ -1,7 +1,16 @@
-import { addEdge as addFlowEdge, applyEdgeChanges, applyNodeChanges, Connection, Edge, EdgeChange, MarkerType, Node, NodeChange } from "reactflow";
+import {
+  addEdge as addFlowEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  Connection,
+  Edge,
+  EdgeChange,
+  Node,
+  NodeChange
+} from "reactflow";
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { EdgeData, NodeData, NodeState, PipelineData, PipelineState } from "../states/pipelineState";
+import {createSlice, PayloadAction} from '@reduxjs/toolkit'
+import {EdgeData, NodeData, NodeState, PipelineData, PipelineState} from "../states/pipelineState";
 
 export const initialState: PipelineState = {
   pipelines: [],

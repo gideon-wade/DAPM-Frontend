@@ -1,60 +1,37 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {styled} from '@mui/material/styles';
 import {
-  Drawer,
-  List,
-  Typography,
+  Box,
+  Button,
+  CircularProgress,
+  Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
+  Drawer,
+  IconButton,
+  List,
   ListItem,
   ListItemButton,
   ListItemText,
-  Box,
-  Collapse,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
-  CircularProgress,
-  Snackbar,
+  Typography,
 } from '@mui/material';
-import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { getOrganizations, getRepositories, getResources, getPipelines } from '../../redux/selectors/apiSelector';
-import { organizationThunk, repositoryThunk, resourceThunk } from '../../redux/slices/apiSlice';
-import { Organization, Pipeline, Repository, Resource } from '../../redux/states/apiState';
-import { useAppDispatch, useAppSelector } from '../../hooks';
-import { v4 as uuidv4 } from 'uuid';
-import ResourceUploadButton from './Buttons/ResourceUploadButton';
-import {
-  downloadResource,
-  fetchOrganization,
-  fetchOrganizationRepositories,
-  fetchOrganizations,
-  fetchPipeline,
-  fetchRepositoryPipelines,
-  fetchRepositoryResources,
-  fetchResource,
-  putPipeline,
-  putRepository,
-  deleteRepository,
-  deletePipeline
-} from '../../services/backendAPI';
+import {ExpandLess, ExpandMore} from '@mui/icons-material';
+import {useSelector} from 'react-redux';
+import {getOrganizations, getRepositories, getResources} from '../../redux/selectors/apiSelector';
+import {organizationThunk, repositoryThunk, resourceThunk} from '../../redux/slices/apiSlice';
+import {Organization, Pipeline, Repository, Resource} from '../../redux/states/apiState';
+import {useAppDispatch, useAppSelector} from '../../hooks';
+import {deleteRepository, downloadResource, fetchPipeline, fetchRepositoryPipelines} from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
-import OperatorUploadButton from './Buttons/OperatorUploadButton';
-import { Padding } from '@mui/icons-material';
-import { json } from 'stream/consumers';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ResourceList from './ResourceList';
-import { addNewPipeline } from '../../redux/slices/pipelineSlice';
-import { getActiveFlowData, getActivePipeline } from "../../redux/selectors";
-import { NodeState } from '../../redux/states/pipelineState';
-
-
+import ResourceList from './Parts/ResourceList';
+import {addNewPipeline} from '../../redux/slices/pipelineSlice';
+import {NodeState} from '../../redux/states/pipelineState';
 
 const drawerWidth = 240;
 
@@ -71,16 +48,20 @@ const PersistentDrawerLeft: React.FC = () => {
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
   const resources: Resource[] = useSelector(getResources);
-  // const pipelines : Pipeline[] = useSelector(getPipelines);
 
-  const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>({});
+  const [openOrgs, setOpenOrgs] = useState<{ [key: string]: boolean }>(() => {
+    const savedState = localStorage.getItem('openOrgs');
+    return savedState ? JSON.parse(savedState) : {};
+  });
+  const [openRepos, setOpenRepos] = useState<{ [key: string]: boolean }>(() => {
+    const savedState = localStorage.getItem('openRepos');
+    return savedState ? JSON.parse(savedState) : {};
+  });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedRepository, setSelectedRepository] = useState<Repository | null>(null);
   const [loading, setLoading] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-
-
 
   useEffect(() => {
     dispatch(organizationThunk());
@@ -92,6 +73,14 @@ const PersistentDrawerLeft: React.FC = () => {
     dispatch(resourceThunk({organizations, repositories}));
   }, [repositories]);
 
+  useEffect(() => {
+    localStorage.setItem('openOrgs', JSON.stringify(openOrgs));
+  }, [openOrgs]);
+
+  useEffect(() => {
+    localStorage.setItem('openRepos', JSON.stringify(openRepos));
+  }, [openRepos]);
+
   // Load the pipeline
   async function loadPipelines(orgid: string, repid: string) {
     const jsonPipelineData = await fetchRepositoryPipelines(orgid, repid);
@@ -100,15 +89,14 @@ const PersistentDrawerLeft: React.FC = () => {
     const pipelines = jsonPipelineData.result.pipelines
 
     setPipelines(pipelines);
-}
+  }
 
-  const  [pipelines, setPipelines] = useState<Pipeline[]>([]);
+  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   useEffect(() => {
     if (organizations.length > 0 && repositories.length > 0) {
       loadPipelines(organizations[0].id, repositories[0].id);
     }
   }, []);
-
 
   const handleDownload = async (resource: Resource) => {
     const response = await downloadResource(resource.organizationId, resource.repositoryId, resource.id);
@@ -119,9 +107,14 @@ const PersistentDrawerLeft: React.FC = () => {
     window.open(url, '_blank');
   };
 
-  const handleToggle = (orgId: string) => {
+  const handleToggleOrg = (orgId: string) => {
     setOpenOrgs(prev => ({...prev, [orgId]: !prev[orgId]}));
   };
+
+  const handleToggleRepo = (repoId: string) => {
+    setOpenRepos(prev => ({...prev, [repoId]: !prev[repoId]}));
+  };
+
   const openDeleteDialog = (repository: Repository) => {
     setSelectedRepository(repository);
     setDeleteDialogOpen(true);
@@ -138,7 +131,7 @@ const PersistentDrawerLeft: React.FC = () => {
     try {
       await deleteRepository(selectedRepository.organizationId, selectedRepository.id);
       console.log("Repository deleted successfully");
-      dispatch(repositoryThunk(organizations)); // Reload repositories after deletion
+      dispatch(repositoryThunk(organizations));
       setSuccessMessage(`Repository ${selectedRepository.name} deleted successfully!`);
       setShowSuccessDialog(true);
     } catch (error) {
@@ -148,28 +141,24 @@ const PersistentDrawerLeft: React.FC = () => {
       closeDeleteDialog();
     }
   };
-  const handleDeletePipeline = async (organizationId: string, repositoryId: string, pipelineId: string) => {
-    try {
-      const result = await deletePipeline(organizationId, repositoryId, pipelineId);
-      console.log("Pipeline deleted successfully:", result);
-      dispatch(() => {loadPipelines(organizationId, repositoryId)});  // Reload repositories after deletion
-    } catch (error) {
-      console.error("Error deleting pipeline:", error);
-    }
-  }
   const handleCloseSuccessDialog = () => {
     setShowSuccessDialog(false);
   };
 
   const handlePipelineClick = async (pipeline: Pipeline) => {
     console.log('Pipeline clicked:', pipeline);
-    
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
-    
-    dispatch(addNewPipeline({id: "pipeline-"+pipeline.id, name: response.result.pipelines[0].name as string, currentFolderID: "", flowData: response.result.pipelines[0].pipeline as NodeState}));
+
+    dispatch(addNewPipeline({
+      id: "pipeline-" + pipeline.id,
+      name: response.result.pipelines[0].name as string,
+      currentFolderID: "",
+      flowData: response.result.pipelines[0].pipeline as NodeState
+    }));
     // Add your logic here, e.g., navigate to a pipeline detail page
     console.log("Added pipeline")
   };
+
   return (
     <Drawer
       PaperProps={{
@@ -200,7 +189,7 @@ const PersistentDrawerLeft: React.FC = () => {
         {organizations.map((organization) => (
           <React.Fragment key={organization.id}>
             <ListItem sx={{justifyContent: 'space-between'}} disablePadding>
-              <ListItemButton onClick={() => handleToggle(organization.id)}>
+              <ListItemButton onClick={() => handleToggleOrg(organization.id)}>
                 <ListItemText
                   primary={organization.name}
                   primaryTypographyProps={{style: {fontSize: '25px', marginBlock: '0rem'}}}
@@ -211,20 +200,25 @@ const PersistentDrawerLeft: React.FC = () => {
               </ListItemButton>
             </ListItem>
             <Collapse in={openOrgs[organization.id]} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
+              <List component="div" sx={{paddingLeft: '16px'}}>
                 {repositories.map((repository) => (
                   repository.organizationId === organization.id && (
                     <React.Fragment key={repository.id}>
-                      <ListItem sx={{paddingInline: '5px'}}>
-                        <ListItemText
-                          primary={repository.name}
-                          primaryTypographyProps={{
-                            style: {
-                              fontSize: '25px',
-                              marginBlock: '10px'
-                            }
-                          }}
-                        />
+                      <ListItem sx={{justifyContent: 'space-between'}} disablePadding>
+                        <ListItemButton onClick={() => handleToggleRepo(repository.id)}>
+                          <ListItemText
+                            primary={repository.name}
+                            primaryTypographyProps={{
+                              style: {
+                                fontSize: '25px',
+                                marginBlock: '10px'
+                              }
+                            }}
+                          />
+                          <IconButton edge="end">
+                            {openRepos[repository.id] ? <ExpandLess/> : <ExpandMore/>}
+                          </IconButton>
+                        </ListItemButton>
                         <IconButton
                           aria-label="delete"
                           onClick={() => openDeleteDialog(repository)}
@@ -232,67 +226,78 @@ const PersistentDrawerLeft: React.FC = () => {
                             color: '#96281b'
                           }}
                         >
-                          <DeleteIcon />
+                          <DeleteIcon/>
                         </IconButton>
                       </ListItem>
 
-                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                    listName={"Eventlog"} typeName={"eventLog"}></ResourceList>
-                    
-            <ListItem>
-                <ListItemText 
-                    primary="Saved Pipelines" 
-                    primaryTypographyProps={{ style: { fontSize: '0.9rem' } }} 
-                />
-            </ListItem>
-                      
-            {Array.isArray(pipelines) && Array.from(
-              pipelines
-              .reduce((map, pipeline) => {
-                
-                if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
-                  return map;
-                }
+                      <Collapse in={openRepos[repository.id]} timeout="auto" unmountOnExit>
 
-                map.set(pipeline.id, pipeline);
-                
-                return map;
-                
-              }, new Map())
-              .values() // Extract only the values (newest pipelines) from the map
-            )
-            .filter((pipeline) => pipeline.repositoryId === repository.id) // Filter by repository ID
-            .map((pipeline) => (
-                pipeline.repositoryId === repository.id && (
-                    <ListItem key={pipeline.id} disablePadding>
-                        <ListItemButton sx={{ paddingBlock: 0 }} onClick={() => handlePipelineClick(pipeline)}>
-                          <ListItemText 
-                            secondary={pipeline.name}
-                            secondaryTypographyProps={{ fontSize: "0.8rem" }} 
+                        {/*We hide the items if empty to save some space*/}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'eventLog').length > 0 && (
+                          <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                        listName={"Eventlog"} typeName={"eventLog"}/>
+                        )}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'bpmnModel').length > 0 && (
+                          <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                        listName={"BPMN Models"} typeName={"bpmnModel"}/>
+                        )}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'petriNet').length > 0 && (
+                          <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                        listName={"Petri Nets"} typeName={"petriNet"}/>
+                        )}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'operator').length > 0 && (
+                          <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                        listName={"Operators"} typeName={"operator"}/>
+                        )}
+
+                        {resources.filter(resource => resource.repositoryId === repository.id && (
+                          resource.type === 'eventLog' ||
+                          resource.type === 'bpmnModel' ||
+                          resource.type === 'petriNet' ||
+                          resource.type === 'operator'
+                        )).length === 0 && (
+                          <ListItem>
+                            <ListItemText
+                              primary="Resources apear here when uploaded"
+                              primaryTypographyProps={{style: {fontSize: '0.7rem', color: 'gray'}}}
+                            />
+                          </ListItem>
+                        )}
+
+                        <ListItem>
+                          <ListItemText
+                            primary="Saved Pipelines"
+                            primaryTypographyProps={{style: {fontSize: '0.9rem'}}}
                           />
-                          <IconButton
-                            aria-label="delete"
-                            onClick={() => handleDeletePipeline(organization.id, repository.id, pipeline.id)}
-                            sx={{
-                              color: '#96281b'
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </ListItemButton>
-                    </ListItem>
-                    )
-            ))} 
+                        </ListItem>
 
-                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                    listName={"BPMN Models"} typeName={"bpmnModel"}></ResourceList>
-
-                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                    listName={"Petri Nets"} typeName={"petriNet"}></ResourceList>
-
-                      <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
-                                    listName={"Operators"} typeName={"operator"}></ResourceList>
-
+                        {Array.isArray(pipelines) && Array.from(
+                          pipelines
+                            .reduce((map, pipeline) => {
+                              if (!pipeline.timestamp || isNaN(pipeline.timestamp)) {
+                                return map;
+                              }
+                              if (!map.has(pipeline.name) || map.get(pipeline.name).timestamp < pipeline.timestamp) {
+                                map.set(pipeline.name, pipeline);
+                              }
+                              return map;
+                            }, new Map())
+                            .values()
+                        )
+                          .filter((pipeline) => pipeline.repositoryId === repository.id)
+                          .map((pipeline) => (
+                            pipeline.repositoryId === repository.id && (
+                              <ListItem key={pipeline.id} disablePadding>
+                                <ListItemButton sx={{paddingBlock: 0}} onClick={() => handlePipelineClick(pipeline)}>
+                                  <ListItemText
+                                    secondary={pipeline.name}
+                                    secondaryTypographyProps={{fontSize: "0.8rem"}}
+                                  />
+                                </ListItemButton>
+                              </ListItem>
+                            )
+                          ))}
+                      </Collapse>
                     </React.Fragment>
                   )
                 ))}
@@ -323,7 +328,7 @@ const PersistentDrawerLeft: React.FC = () => {
                     No
                   </Button>
                   <Button onClick={handleDeleteRepository} color="primary" disabled={loading} autoFocus>
-                    {loading ? <CircularProgress size={24} /> : "Yes"}
+                    {loading ? <CircularProgress size={24}/> : "Yes"}
                   </Button>
                 </DialogActions>
               </Dialog>

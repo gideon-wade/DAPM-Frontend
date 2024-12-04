@@ -2,7 +2,6 @@ import { Box } from "@mui/material";
 import { memo } from "react";
 import { Handle, NodeProps, Position } from "reactflow";
 import { NodeData, OperatorNodeData } from "../../../redux/states/pipelineState";
-import { Tooltip } from 'react-tooltip'
 
 function CustomNode({data, selected}: NodeProps<OperatorNodeData>) {
   return (

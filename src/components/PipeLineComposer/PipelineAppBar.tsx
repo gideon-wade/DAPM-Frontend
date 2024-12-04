@@ -9,11 +9,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import { getActiveFlowData, getActivePipeline, getPipelines } from "../../redux/selectors";
 import { updatePipelineName, updatePipelineId, setFlowdata } from "../../redux/slices/pipelineSlice";
 import { DataSinkNodeData, DataSourceNodeData, FlowData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
-import { putCommandStart, putExecution, putPipeline, executionStatus, fetchRepositoryPipelines, fetchPipeline, deletePipeline, fetchStatus } from "../../services/backendAPI";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
 import DataSinkNode from "./Nodes/DataSinkNode";
 import { validate } from "./validation/validation";
+import { deletePipeline, putCommandStart, putExecution, putPipeline } from "../../services/backendAPI";
 
 export default function PipelineAppBar() {
   const navigate = useNavigate();
@@ -176,18 +176,6 @@ export default function PipelineAppBar() {
 
   }
 
-  const getPipelines = async () => {
-    const selectedOrg = organizations[0]
-    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
-
-    const response = await fetchRepositoryPipelines(selectedOrg.id, selectedRepo.id)
-  }
-  const getAPipeline = async (pipelineId: string) => {
-    const selectedOrg = organizations[0]
-    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
-
-    const response = await fetchPipeline(selectedOrg.id, selectedRepo.id, pipelineId)
-  }
 
   const savePipeline = async () => {
 

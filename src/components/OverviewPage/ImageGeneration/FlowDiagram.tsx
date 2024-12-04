@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactFlow, { Edge, Handle, Node } from 'reactflow';
+import ReactFlow, {Edge, Node} from 'reactflow';
 import DataSourceNode from '../../PipeLineComposer/Nodes/DataSourceNode';
 import DataSinkNode from '../../PipeLineComposer/Nodes/DataSinkNode';
 import CustomNode from '../../PipeLineComposer/Nodes/CustomNode';

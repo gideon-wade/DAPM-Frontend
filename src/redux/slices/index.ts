@@ -1,8 +1,7 @@
-import { Reducer, combineReducers } from "redux"
-import nodeReducer from "./pipelineSlice"
-import apiReducer from "./apiSlice"
+import {combineReducers, Reducer} from "redux"
 import pipelineReducer from "./pipelineSlice"
-import { RootState } from "../states"
+import apiReducer from "./apiSlice"
+import {RootState} from "../states"
 
 const rootReducer: Reducer<RootState> = combineReducers({
     apiState: apiReducer,
