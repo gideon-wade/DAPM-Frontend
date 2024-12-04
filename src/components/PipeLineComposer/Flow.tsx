@@ -66,76 +66,52 @@ const BasicFlow = () => {
 
   const connectionLineStyle = { stroke: 'white', strokeOpacity: 1, strokeWidth: "1px" }
 
-  const [hasError, setHasError] = useState(false);
+  const [prevNodes, setPrevNodes] = useState(nodes);
 
-  const setError = (value: boolean) => {
-    setHasError(value);
-  };
 
-// const updateTooltipText = (nodeId: string, newText: string) => {
-//   const node = nodes.find(node => node.id === nodeId);
-//   if (node) {
-//     dispatch(updateNode({
-//       ...node,
-//       data: {
-//         ...node.data,
-//         templateData: {
-//           ...node.data.templateData,
-//           hint: newText
-//         }
-//       }
-//     }));
-//   }
-// };
+  useEffect(() => {
+    const errors = validate({ nodes, edges } as FlowData);
 
-// // Example usage
-// updateTooltipText('node-1', 'New Tooltip Text');
-  useOnSelectionChange({
-    onChange: ({ nodes: selectedNodes, edges: selectedEdges }) => {
-      console.log('Pipeline has changed:', nodes);
-      const errors = validate({ nodes, edges } as FlowData);
-      console.log('Errors:', errors);
-  
-      // find the nodes in the errors and set the hasError property to true
-      const nextNodes = nodes?.map(node => {
-        const error = errors.find(error => error[1] === node.id);
-        if (error) {
-          return {
-            ...node,
-            hasError: true,
-            data: {
-              ...node.data,
-              errorMsg : error[0],
-             
-            },
-            style: {
-              ...node.style,
-              backgroundColor: node.type == "organization" ? '#BB000033' : '#BB0000',
-
-            },
-          };
-        } else {
-          return {
-            ...node,
-            hasError: false,
-            data: {
-              ...node.data,
-              errorMsg: '', // Clear the error message if no error
-            },
-            style: {
-              ...node.style,
-              backgroundColor: node.type != "organization" ? '#556677' : ""
-            },
-          };
-        }
-      });
-      console.log('Next nodes:', nextNodes);
-      if (nextNodes) {
-        dispatch(setNodes(nextNodes));
-        console.log('Nodes have been updated:', nextNodes);
+    // find the nodes in the errors and set the hasError property to true
+    const nextNodes = nodes?.map(node => {
+      const error = errors.find(error => error[1] === node.id);
+      if (error) {
+        return {
+          ...node,
+          hasError: true,
+          data: {
+            ...node.data,
+            errorMsg: error[0],
+          },
+          style: {
+            ...node.style,
+            backgroundColor: node.type == "organization" ? '#BB000033' : '#BB0000',
+          },
+        };
+      } else {
+        return {
+          ...node,
+          hasError: false,
+          data: {
+            ...node.data,
+            errorMsg: '', // Clear the error message if no error
+          },
+          style: {
+            ...node.style,
+            backgroundColor: node.type != "organization" ? '#556677' : "",
+          },
+        };
       }
-    },
-  });
+    });
+
+    if (JSON.stringify(nextNodes) !== JSON.stringify(nodes) && nextNodes) {
+      dispatch(setNodes(nextNodes));
+    }
+  }, [nodes, edges, dispatch]); // Dependencies array
+
+
+ 
+
 
 
 
