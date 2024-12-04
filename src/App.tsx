@@ -4,6 +4,9 @@ import "./index.css";
 import {Provider} from "react-redux";
 import {configureStore} from "@reduxjs/toolkit";
 import rootReducer from "./redux/slices";
+import React from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import {persistReducer} from 'redux-persist'
 import storage from 'redux-persist/lib/storage' // defaults to localStorage for web
@@ -60,6 +63,17 @@ export default function App() {
         <Provider store={store}>
           <RouterProvider router={router} />
         </Provider>
+        <ToastContainer
+            position="bottom-right"
+            autoClose={3000} // Close after 3 seconds
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            pauseOnHover
+            theme="dark"
+        />
       </div>
     </ThemeProvider>
   );

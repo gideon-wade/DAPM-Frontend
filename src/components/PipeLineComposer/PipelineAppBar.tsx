@@ -13,6 +13,7 @@ import { getOrganizations, getRepositories } from "../../redux/selectors/apiSele
 import { getHandleId, getNodeId } from "./Flow";
 import { validate } from "./validation/validation";
 import { deletePipeline, putCommandStart, putExecution, putPipeline } from "../../services/backendAPI";
+import { toast } from 'react-toastify';
 
 export default function PipelineAppBar() {
   const navigate = useNavigate();
@@ -23,7 +24,8 @@ export default function PipelineAppBar() {
 
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const handleContinueAnyway = async () => {
+  const startPipeline = async () => {
+    const loadingToast = toast.loading("Deploying pipeline: " + pipelineName);
     setShowErrorPopup(false);
     // Continue with the pipeline execution
     const selectedOrg = organizations[0];
@@ -32,12 +34,23 @@ export default function PipelineAppBar() {
     try {
       pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestDataScope);
     } catch (e) {
-      alert("There was an error deploying the pipeline");
+      toast.update(loadingToast, {
+        render: "There was an error deploying the pipeline",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
       return;
     }
 
     const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId);
     await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId);
+    toast.update(loadingToast, {
+      render: "Deployed pipeline: " + pipelineName,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
   };
 
 
@@ -159,25 +172,12 @@ export default function PipelineAppBar() {
       setShowErrorPopup(true);
       return
     }
-    const selectedOrg = organizations[0]
-    const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
-    let pipelineId
-    try {
-      pipelineId = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
-
-    } catch (e) {
-      alert("There was an error deploying the pipeline")
-      return
-    }
-
-    const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId)
-    await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId)
-
+    startPipeline()
   }
 
 
   const savePipeline = async () => {
-
+    const loadingToast = toast.loading("Saving pipeline: " + pipelineName);
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
@@ -204,6 +204,12 @@ export default function PipelineAppBar() {
     }
     const pipeline = await putPipeline(selectedOrg.id, selectedRepo.id, requestData)
     dispatch(updatePipelineId("pipeline-"+pipeline.id));
+    toast.update(loadingToast, {
+      render: "Saved pipeline: " + pipelineName,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
   }
 
   const uploadPipeline = async () => {
@@ -318,7 +324,7 @@ export default function PipelineAppBar() {
               <Button onClick={() => setShowErrorPopup(false)} sx={{ backgroundColor: "gray", padding: "6px 12px", color: "white" }}>
                 Close
               </Button>
-              <Button onClick={handleContinueAnyway} sx={{ backgroundColor: "gray", padding: "6px 12px", color: "white" }}>
+              <Button onClick={startPipeline} sx={{ backgroundColor: "gray", padding: "6px 12px", color: "white" }}>
                 Continue Anyway
               </Button>
             </Box>

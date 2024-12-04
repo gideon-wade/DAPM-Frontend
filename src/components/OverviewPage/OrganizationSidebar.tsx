@@ -25,13 +25,20 @@ import {getOrganizations, getRepositories, getResources} from '../../redux/selec
 import {organizationThunk, repositoryThunk, resourceThunk} from '../../redux/slices/apiSlice';
 import {Organization, Pipeline, Repository, Resource} from '../../redux/states/apiState';
 import {useAppDispatch, useAppSelector} from '../../hooks';
-import {deleteRepository, downloadResource, fetchPipeline, fetchRepositoryPipelines} from '../../services/backendAPI';
+import {
+  deletePipeline,
+  deleteRepository,
+  downloadResource, fetchOrganizationRepositories,
+  fetchPipeline,
+  fetchRepositoryPipelines
+} from '../../services/backendAPI';
 import CreateRepositoryButton from './Buttons/CreateRepositoryButton';
 import AddOrganizationButton from './Buttons/AddOrganizationButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ResourceList from './Parts/ResourceList';
 import {addNewPipeline} from '../../redux/slices/pipelineSlice';
 import {NodeState} from '../../redux/states/pipelineState';
+import { toast } from 'react-toastify';
 
 const drawerWidth = 240;
 
@@ -130,23 +137,42 @@ const PersistentDrawerLeft: React.FC = () => {
     setLoading(true);
     try {
       await deleteRepository(selectedRepository.organizationId, selectedRepository.id);
-      console.log("Repository deleted successfully");
       dispatch(repositoryThunk(organizations));
-      setSuccessMessage(`Repository ${selectedRepository.name} deleted successfully!`);
-      setShowSuccessDialog(true);
     } catch (error) {
       console.error("Error deleting repository:", error);
+      toast.error("Error in deleting repository");
     } finally {
       setLoading(false);
       closeDeleteDialog();
+      toast.success("Deleted repository");
     }
   };
+  const handleDeletePipeline = async (organizationId: string, repositoryId: string, pipelineId: string) => {
+    const loadingToast = toast.loading("Deleting pipeline");
+    try {
+      const result = await deletePipeline(organizationId, repositoryId, pipelineId);
+      dispatch(() => {loadPipelines(organizationId, repositoryId)});  // Reload repositories after deletion
+    } catch (error) {
+      console.error("Error deleting pipeline:", error);
+      toast.update(loadingToast, {
+        render: "Error in deleting pipeline",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    }
+    toast.update(loadingToast, {
+      render: "Deleted pipeline",
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
+  }
   const handleCloseSuccessDialog = () => {
     setShowSuccessDialog(false);
   };
 
   const handlePipelineClick = async (pipeline: Pipeline) => {
-    console.log('Pipeline clicked:', pipeline);
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
 
     dispatch(addNewPipeline({
@@ -155,8 +181,6 @@ const PersistentDrawerLeft: React.FC = () => {
       currentFolderID: "",
       flowData: response.result.pipelines[0].pipeline as NodeState
     }));
-    // Add your logic here, e.g., navigate to a pipeline detail page
-    console.log("Added pipeline")
   };
 
   return (
@@ -293,6 +317,18 @@ const PersistentDrawerLeft: React.FC = () => {
                                     secondary={pipeline.name}
                                     secondaryTypographyProps={{fontSize: "0.8rem"}}
                                   />
+                                  <IconButton
+                                      aria-label="delete"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleDeletePipeline(organization.id, repository.id, pipeline.id).then(r => r);
+                                      }}
+                                      sx={{
+                                        color: '#96281b'
+                                      }}
+                                  >
+                                    <DeleteIcon/>
+                                  </IconButton>
                                 </ListItemButton>
                               </ListItem>
                             )
@@ -309,7 +345,9 @@ const PersistentDrawerLeft: React.FC = () => {
                     justifyContent: 'center',
                     alignItems: 'center'
                   }}>
-                    <CreateRepositoryButton orgId={organization.id}/>
+                    <CreateRepositoryButton
+                        orgId={organizations[0]?.id}
+                    />
                   </Box>
                 </ListItem>
               </List>
