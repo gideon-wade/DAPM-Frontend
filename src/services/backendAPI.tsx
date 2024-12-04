@@ -1,6 +1,11 @@
 // const path = `se2-e.compute.dtu.dk`
 //const path = `http://localhost:5000`;
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 const vmPath = `se2-e.compute.dtu.dk:5000`
 const localPath = `localhost:5000`
 
@@ -67,7 +72,7 @@ const getData = async (ticketId: string): Promise<any> => {
             if (data.status) {
                 return data;
             }
-            await delay(100); // Wait for 0.1 second before retrying
+            await delay(2000); // Wait for 2 second before retrying
         } catch (error) {
             if (retries === maxRetries - 1) {
                 throw new Error('Max retries reached');
@@ -88,7 +93,7 @@ const getFile = async (ticketId: string): Promise<any> => {
             if (data.status) {
                 return data;
             }
-            await delay(3000); // Wait for 3 second before retrying
+            await delay(2000); // Wait for 2 second before retrying
         } catch (error) {
             if (retries === maxRetries - 1) {
                 throw new Error('Max retries reached');

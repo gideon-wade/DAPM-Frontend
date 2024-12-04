@@ -7,6 +7,10 @@ import Sidebar from "../components/PipeLineComposer/NodesSidebar";
 import PipelineAppBar from "../components/PipeLineComposer/PipelineAppBar";
 import LoadingSpinner from "../components/LoadingSpinner";
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
 
 const PipelineComposer = () => {
     return (

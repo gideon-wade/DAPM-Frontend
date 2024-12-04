@@ -27,6 +27,11 @@ const style = {
   p: 4,
 };
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 export default function AddOrganizationButton() {
   const [domainName, setDomainName] = useState('');
   const [open, setOpen] = useState(false);

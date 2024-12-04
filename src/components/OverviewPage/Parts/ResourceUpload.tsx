@@ -3,6 +3,7 @@ import {Box, Button, FormControl, FormLabel, MenuItem, Modal, Select, TextField,
 import {putResource} from '../../../services/backendAPI';
 import {Organization, Repository} from "../../../redux/states/apiState";
 import {SelectChangeEvent} from '@mui/material/Select';
+import {toast} from "react-toastify";
 
 export interface UploadButtonProps {
   orgs: Organization[],
@@ -37,10 +38,6 @@ const ResourceUpload = ({orgs, reps, open, onClose}: UploadButtonProps) => {
     setSelectedRepo(''); // Reset selected repo when org changes
   };
 
-  const handleClose = () => {
-    onClose();
-  };
-
   const handleRepoChange = (event: SelectChangeEvent<string>) => {
     setSelectedRepo(event.target.value as string);
   };
@@ -49,22 +46,19 @@ const ResourceUpload = ({orgs, reps, open, onClose}: UploadButtonProps) => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const formEntries = Object.fromEntries(formData.entries());
-
-    console.log('Form Data:', formEntries);
 
     if (formData.get('ResourceFile')) {
       try {
         const result = await putResource(selectedOrg, selectedRepo, formData);
-        console.log('Resource successfully uploaded:', result);
       } catch (error) {
         console.error('Error uploading resource:', error);
+        toast.error("Error uploading resource");
       }
     } else {
       console.error('No file selected.');
     }
 
-    alert("Form Submitted");
+    toast.success("Resource uploaded")
     onClose(); // Close the form on submit
   };
 
