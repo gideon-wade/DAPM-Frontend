@@ -47,7 +47,6 @@ const nodeTypes = {
   dataSource: DataSourceNode,
   dataSink: DataSinkNode,
   organization: OrganizationNode,
-  // tooltip: TooltipNode,
 };
 
 const edgeTypes = {

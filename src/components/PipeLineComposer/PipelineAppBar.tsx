@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Edge, Node } from "reactflow";
+import {Node } from "reactflow";
 import { AppBar, Box, Button, TextField, Toolbar, Typography, Modal, FormControl, FormLabel, Select, MenuItem } from "@mui/material";
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,7 +11,6 @@ import { updatePipelineName, updatePipelineId, setFlowdata } from "../../redux/s
 import { DataSinkNodeData, DataSourceNodeData, FlowData, OperatorNodeData, OrganizationNodeData } from "../../redux/states/pipelineState";
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
-import DataSinkNode from "./Nodes/DataSinkNode";
 import { validate } from "./validation/validation";
 import { deletePipeline, putCommandStart, putExecution, putPipeline } from "../../services/backendAPI";
 
