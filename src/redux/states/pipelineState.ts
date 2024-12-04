@@ -42,6 +42,7 @@ export interface NodeData {
   height: number;
   templateData: BaseTemplateData;
   instantiationData: BaseInstantiationData;
+  errorMsg: string;
 }
 export interface DataSourceNodeData extends NodeData {
   templateData: DataSourceTemplateData;

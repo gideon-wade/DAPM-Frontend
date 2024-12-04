@@ -30,8 +30,15 @@ function OrganizationNode({ data, id, selected }: NodeProps<OrganizationNodeData
         minWidth={minWidth}
         isVisible={true}
       />
-      <Typography sx={{color: "white"}}>{data?.instantiationData.organization?.name ?? '-'}</Typography>
       
+      {(data?.errorMsg) ? (
+        <div className="tooltip">
+          {<Typography sx={{color: "white"}}>{data?.instantiationData.organization?.name ?? '-'}</Typography>}
+          <span className="tooltiptext">{data?.errorMsg}</span>
+        </div>
+      ) : (
+        <Typography sx={{color: "white"}}>{data?.instantiationData.organization?.name ?? '-'}</Typography>
+      )}
     </Box>
   );
 }

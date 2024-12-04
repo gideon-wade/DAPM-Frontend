@@ -17,7 +17,19 @@ const DataSourceNode = ({ data, selected }: NodeProps<NodeData>) => {
                     style={{ position: "relative", transform: "none", top: "auto" }}
                 />)}
             </Box>
+           
+
+        {(data?.errorMsg) ? (
+        <div className="tooltip">
+          { <SourceIcon />}
+          <span className="tooltiptext">{data?.errorMsg}</span>
+        </div>
+        ) : (
             <SourceIcon />
+        )}
+
+
+
             <Box style={{ display: "flex", flexDirection: "column", justifyContent: "space-around", position: "absolute", top: "0", bottom: "0", right: "0" }}>
                 {data?.templateData.sourceHandles?.map(handle => <Handle
                     key={handle.id}

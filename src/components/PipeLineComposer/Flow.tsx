@@ -31,12 +31,13 @@ import { getEdges, getNodes } from "../../redux/selectors";
 import { DefaultEdge } from "./Edges/DefaultEdge";
 import { validate } from "./validation/validation";
 import { v4 as uuidv4 } from "uuid";
-
+// import { TooltipNode, type TooltipNodeType } from "@/components/tooltip-node";
 const nodeTypes = {
   operator: CustomNode,
   dataSource: DataSourceNode,
   dataSink: DataSinkNode,
-  organization: OrganizationNode
+  organization: OrganizationNode,
+  // tooltip: TooltipNode,
 };
 
 const edgeTypes = {
@@ -71,53 +72,69 @@ const BasicFlow = () => {
     setHasError(value);
   };
 
+// const updateTooltipText = (nodeId: string, newText: string) => {
+//   const node = nodes.find(node => node.id === nodeId);
+//   if (node) {
+//     dispatch(updateNode({
+//       ...node,
+//       data: {
+//         ...node.data,
+//         templateData: {
+//           ...node.data.templateData,
+//           hint: newText
+//         }
+//       }
+//     }));
+//   }
+// };
 
+// // Example usage
+// updateTooltipText('node-1', 'New Tooltip Text');
   useOnSelectionChange({
-    onChange : ({ nodes: selectedNodes, edges: selectedEdges }) => {
-    console.log('Pipeline has changed:', nodes);
-    const errors = validate({nodes, edges} as FlowData);
-    console.log('Errors:', errors);
+    onChange: ({ nodes: selectedNodes, edges: selectedEdges }) => {
+      console.log('Pipeline has changed:', nodes);
+      const errors = validate({ nodes, edges } as FlowData);
+      console.log('Errors:', errors);
+  
+      // find the nodes in the errors and set the hasError property to true
+      const nextNodes = nodes?.map(node => {
+        const error = errors.find(error => error[1] === node.id);
+        if (error) {
+          return {
+            ...node,
+            hasError: true,
+            data: {
+              ...node.data,
+              errorMsg : error[0],
+             
+            },
+            style: {
+              ...node.style,
+              backgroundColor: node.type == "organization" ? '#BB000033' : '#BB0000',
 
-    // find the nodes in the errors and set the hasError property to true
-    const nextNodes = nodes?.map(node => {
-      if (errors.find(error => error[1] === node.id)) {
-        console.log('Node has error:', node);
-        console.log('Node has error json (new) :', JSON.stringify(node)); 
-        return {
-          ...node,
-          hasError: true,
-          // style: { backgroundColor: '#AA0000' } 
-          style: { ...node.style,
-            backgroundColor: '#BB0000',
-            
-           }
-          // style: node.id == "organization" ? { backgroundColor: '#AA000011' } : { backgroundColor: '#AA0000' } 
+            },
+          };
+        } else {
+          return {
+            ...node,
+            hasError: false,
+            data: {
+              ...node.data,
+              errorMsg: '', // Clear the error message if no error
+            },
+            style: {
+              ...node.style,
+              backgroundColor: node.type != "organization" ? '#556677' : ""
+            },
+          };
         }
-      } else {
-        return {
-          ...node,
-          hasError: false,
-          style: { ...node.style,
-            backgroundColor: node.type != "organization" ? '#556677' : ""
-           }
-          // style: node.type == "organization" ? { backgroundColor: '#AA00AA11' } : { backgroundColor: '#AA00AA' } 
-          
-
-          // selected : true
-        }
+      });
+      console.log('Next nodes:', nextNodes);
+      if (nextNodes) {
+        dispatch(setNodes(nextNodes));
+        console.log('Nodes have been updated:', nextNodes);
       }
-    });
-    console.log('Next nodes:', nextNodes);
-    if (nextNodes) {
-      dispatch(setNodes(nextNodes));
-      console.log('Nodes have been updated:', nextNodes);
-    }
-    // Only update the state if there are changes
-    // if (JSON.stringify(nextNodes) !== JSON.stringify(nodes) && nextNodes) {
-    //   dispatch(setNodes(nextNodes));
-    //   console.log('Nodes have been updated:', nextNodes);
-    // }
-  }
+    },
   });
 
 
@@ -237,6 +254,7 @@ const BasicFlow = () => {
           instantiationData: {},
           width: 400,
           height: 200,
+          errorMsg: '',
         },
       };
 
