@@ -7,7 +7,7 @@ import {NodeData} from "../../../redux/states/pipelineState";
 const DataSourceNode = ({ data, selected }: NodeProps<NodeData>) => {
 
     return (
-        <Box sx={{ backgroundColor: '#556677', padding: '10px', color: 'white', position: "relative", border: selected ? '2px solid #007bff' : '2px solid #556677' }}>
+        <Box sx={{ padding: '10px', color: 'white', position: "relative", border: selected ? '2px solid #007bff' : '2px solid #556677' }}>
             <Box style={{ display: "flex", flexDirection: "column", justifyContent: "space-around", position: "absolute", top: "0", bottom: "0", left: "0" }}>
                 {data?.templateData.targetHandles?.map(handle => <Handle
                     key={handle.id}
@@ -17,7 +17,19 @@ const DataSourceNode = ({ data, selected }: NodeProps<NodeData>) => {
                     style={{ position: "relative", transform: "none", top: "auto" }}
                 />)}
             </Box>
+           
+
+        {(data?.errorMsg) ? (
+        <div className="tooltip">
+          { <SourceIcon />}
+          <span className="tooltiptext">{data?.errorMsg}</span>
+        </div>
+        ) : (
             <SourceIcon />
+        )}
+
+
+
             <Box style={{ display: "flex", flexDirection: "column", justifyContent: "space-around", position: "absolute", top: "0", bottom: "0", right: "0" }}>
                 {data?.templateData.sourceHandles?.map(handle => <Handle
                     key={handle.id}
