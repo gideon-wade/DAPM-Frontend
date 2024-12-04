@@ -50,6 +50,11 @@ const DrawerHeader = styled('div')(({theme}) => ({
   justifyContent: 'flex-end',
 }));
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 const PersistentDrawerLeft: React.FC = () => {
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);

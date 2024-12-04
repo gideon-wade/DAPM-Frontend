@@ -20,6 +20,11 @@ const style = {
     p: 4,
 };
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 const OperatorUploadButton = ({ orgId, repId }: UploadButtonProps) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);

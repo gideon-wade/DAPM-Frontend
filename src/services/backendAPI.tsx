@@ -1,6 +1,11 @@
 // const path = `se2-e.compute.dtu.dk`
 //const path = `http://localhost:5000`;
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 const vmPath = `se2-e.compute.dtu.dk:5000`
 const localPath = `localhost:5000`
 

@@ -15,6 +15,11 @@ import { validate } from "./validation/validation";
 import { deletePipeline, putCommandStart, putExecution, putPipeline } from "../../services/backendAPI";
 import { toast } from 'react-toastify';
 
+/**
+ * All new changes are made by:
+ * @Author: s204423, s204452, and s205339
+ */
+
 export default function PipelineAppBar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
