@@ -56,7 +56,12 @@ const DrawerHeader = styled('div')(({theme}) => ({
  * @Author: s204423, s204452, s205339 and s204152
  */
 
-const PersistentDrawerLeft: React.FC = () => {
+interface Folder {
+  currentFolderID: string,
+  setCurrentFolderID: Function
+}
+
+const PersistentDrawerLeft: React.FC<Folder> = ({currentFolderID, setCurrentFolderID}: {currentFolderID: string, setCurrentFolderID: Function}) => {
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
@@ -183,11 +188,10 @@ const PersistentDrawerLeft: React.FC = () => {
 
   const handlePipelineClick = async (pipeline: Pipeline) => {
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
-
     dispatch(addNewPipeline({
       id: "pipeline-" + pipeline.id,
       name: response.result.pipelines[0].name as string,
-      currentFolderID: "",
+      currentFolderID: currentFolderID,
       flowData: response.result.pipelines[0].pipeline as NodeState
     }));
   };
@@ -301,6 +305,7 @@ const PersistentDrawerLeft: React.FC = () => {
                             />
                           </ListItem>
                         )}
+                        <OperatorUploadButton orgId={organization.id} repId={repository.id} />
 
                         <ListItem>
                           <ListItemText
@@ -308,8 +313,6 @@ const PersistentDrawerLeft: React.FC = () => {
                             primaryTypographyProps={{style: {fontSize: '0.9rem'}}}
                           />
                         </ListItem>
-
-                        <OperatorUploadButton orgId={organization.id} repId={repository.id} />
 
                         {Array.isArray(pipelines) && Array.from(
                           pipelines

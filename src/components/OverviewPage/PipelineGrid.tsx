@@ -72,14 +72,13 @@ const DraggableGridItem: React.FC<DraggableGridItemProps> = ({ id, name, imgData
   );
 };
 
-export default function AutoGrid() {
+export default function AutoGrid({currentFolderID, setCurrentFolderID}: {currentFolderID: string, setCurrentFolderID: Function}) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const pipelines = useSelector(getPipelines);
   const [resourceUploadOpen, setResourceUploadOpen] = useState(false);
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
-  const [currentFolderID, setCurrentFolderID] = useState('');
 
   const handleResourceUploadOpen = () => {
     setResourceUploadOpen(true);

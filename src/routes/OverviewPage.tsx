@@ -4,6 +4,7 @@ import {useAuth0, withAuthenticationRequired} from '@auth0/auth0-react';
 import OrganizationSidebar from "../components/OverviewPage/OrganizationSidebar";
 import PipelineGrid from "../components/OverviewPage/PipelineGrid";
 import LoadingSpinner from "../components/LoadingSpinner";
+import {useState} from 'react';
 
 /**
  * All new changes are made by:
@@ -13,13 +14,18 @@ import LoadingSpinner from "../components/LoadingSpinner";
 // TODO: logout button somewhere
 const UserPage = () => {
     const { user } = useAuth0();
+    const [currentFolderID, setCurrentFolderID] = useState('');
+
+    function changeFolder(folderID: string) {
+        setCurrentFolderID(folderID)
+    }
 
     return (
         <div>
             <Box sx={{display: 'flex'}}>
                 {/*<p>e-mail: {user?.email}</p> <br/>*/}
-                {<OrganizationSidebar />}
-                {<PipelineGrid />}
+                {<OrganizationSidebar currentFolderID={currentFolderID} setCurrentFolderID={changeFolder}  />}
+                {<PipelineGrid currentFolderID={currentFolderID} setCurrentFolderID={changeFolder} />}
             </Box>
         </div>
     )
