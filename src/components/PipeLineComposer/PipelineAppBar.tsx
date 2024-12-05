@@ -257,17 +257,23 @@ export default function PipelineAppBar() {
 
   const uploadPipeline = async () => {
     let selectedPipeline: HTMLInputElement = document.getElementById("pipelineSelectInput") as HTMLInputElement
-
+    const loadingToast = toast.loading("Uploading pipeline: " + pipelineName);
     if (selectedPipeline!.files!.length > 0) {
       let file = selectedPipeline!.files![0];
       let text = await file.text();
       //console.log(text);
       dispatch(setFlowdata(JSON.parse(text)));
     }
+    toast.update(loadingToast, {
+      render: "Uploaded pipeline: " + pipelineName,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
   }
 
   const downloadPipeline = async () => {
-
+    const loadingToast = toast.loading("Downloading pipeline: " + pipelineName);
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
@@ -282,7 +288,12 @@ export default function PipelineAppBar() {
     tmp.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(flowClone));
     tmp.setAttribute('download', pipelineId+".json");
     tmp.click();
-
+    toast.update(loadingToast, {
+      render: "Downloaded pipeline: " + pipelineName,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
   }
 
   const [open, setOpen] = useState(false);
