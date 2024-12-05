@@ -39,6 +39,7 @@ import ResourceList from './Parts/ResourceList';
 import {addNewPipeline} from '../../redux/slices/pipelineSlice';
 import {NodeState} from '../../redux/states/pipelineState';
 import { toast } from 'react-toastify';
+import OperatorUploadButton from './Buttons/OperatorUploadButton';
 
 const drawerWidth = 240;
 
@@ -142,7 +143,10 @@ const PersistentDrawerLeft: React.FC = () => {
     setLoading(true);
     try {
       await deleteRepository(selectedRepository.organizationId, selectedRepository.id);
+      console.log("Repository deleted successfully");
       dispatch(repositoryThunk(organizations));
+      setSuccessMessage(`Repository ${selectedRepository.name} deleted successfully!`);
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error("Error deleting repository:", error);
       toast.error("Error in deleting repository");
@@ -304,6 +308,8 @@ const PersistentDrawerLeft: React.FC = () => {
                             primaryTypographyProps={{style: {fontSize: '0.9rem'}}}
                           />
                         </ListItem>
+
+                        <OperatorUploadButton orgId={organization.id} repId={repository.id} />
 
                         {Array.isArray(pipelines) && Array.from(
                           pipelines
