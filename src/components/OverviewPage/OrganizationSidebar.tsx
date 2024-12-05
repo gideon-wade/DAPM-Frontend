@@ -278,12 +278,17 @@ const PersistentDrawerLeft: React.FC = () => {
                           <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
                                         listName={"Operators"} typeName={"operator"}/>
                         )}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'pipeline result').length > 0 && (
+                          <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                        listName={"Pipeline results"} typeName={"pipeline result"}/>
+                        )}
 
                         {resources.filter(resource => resource.repositoryId === repository.id && (
                           resource.type === 'eventLog' ||
                           resource.type === 'bpmnModel' ||
                           resource.type === 'petriNet' ||
-                          resource.type === 'operator'
+                          resource.type === 'operator' ||
+                          resource.type === 'pipeline result'
                         )).length === 0 && (
                           <ListItem>
                             <ListItemText
