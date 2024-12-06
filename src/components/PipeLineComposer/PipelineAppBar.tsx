@@ -264,7 +264,7 @@ export default function PipelineAppBar() {
     });
     
     let tmp = document.createElement("a");
-    tmp.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(flowClone));
+    tmp.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURI(JSON.stringify(flowClone)));
     tmp.setAttribute('download', pipelineId+".json");
     tmp.click();
     toast.success("Downloaded pipeline: " + pipelineName);

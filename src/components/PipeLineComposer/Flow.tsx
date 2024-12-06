@@ -94,7 +94,7 @@ const BasicFlow = () => {
           },
           style: {
             ...node.style,
-            backgroundColor: node.type == "organization" ? '#BB000033' : '#BB0000',
+            backgroundColor: node.type == "organization" ? 'rgba(187, 0, 0, 0.33)' : 'rgb(187, 0, 0)',
           },
         };
       } else {
@@ -107,7 +107,7 @@ const BasicFlow = () => {
           },
           style: {
             ...node.style,
-            backgroundColor: node.type != "organization" ? '#556677' : "",
+            backgroundColor: node.type != "organization" ? 'rgb(85, 102, 119)' : "",
           },
         };
       }
