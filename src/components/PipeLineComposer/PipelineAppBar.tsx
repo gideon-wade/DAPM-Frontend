@@ -218,7 +218,7 @@ export default function PipelineAppBar() {
       pipeline: flowClone,
       timestamp: flowClone?.timestamp
     };
-    if (pipelineId != undefined) {
+    if (pipelineId != undefined && pipelineId.split("-")[0] != "pipelineNew") {
       try {
         const deleted = await deletePipeline(selectedOrg.id, selectedRepo.id, pipelineId.split("-").slice(1).join("-"))
       } catch {

@@ -95,7 +95,7 @@ export default function AutoGrid({currentFolderID, setCurrentFolderID}: {current
   };
 
   const createNewPipeline = () => {
-    dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, currentFolderID, name: "unnamed pipeline", flowData: { nodes: [], edges: [], state: 0} }));
+    dispatch(addNewPipeline({ id: `pipelineNew-${uuidv4()}`, currentFolderID, name: "unnamed pipeline", flowData: { nodes: [], edges: [], state: 0} }));
     { navigate("/pipeline") }
   }
   const createNewFolder = () => {
