@@ -350,7 +350,7 @@ export default function AutoGrid({currentFolderID, setCurrentFolderID}: {current
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '10px' }}>
         <Box sx={{ display: 'flex', gap: '10px' }}>
           <StatisticsButton onToggle={handleToggleStatView} />
-          <LogoutButton />
+          {/*<LogoutButton />*/}
         </Box>
       </Box>
       {renderContent()}

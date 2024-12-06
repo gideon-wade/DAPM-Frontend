@@ -11,9 +11,9 @@ import {useState} from 'react';
  * @Author: s204423, s204452, and s205339
  */
 
-// TODO: logout button somewhere
-const UserPage = () => {
-    const { user } = useAuth0();
+
+export default function UserPage(){
+    //const { user } = useAuth0();
     const [currentFolderID, setCurrentFolderID] = useState('');
 
     function changeFolder(folderID: string) {
@@ -30,7 +30,8 @@ const UserPage = () => {
         </div>
     )
 }
-
+/*
 export default withAuthenticationRequired(UserPage, {
     onRedirecting: () => (<LoadingSpinner />)
 });
+*/

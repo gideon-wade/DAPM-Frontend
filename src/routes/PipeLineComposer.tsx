@@ -12,7 +12,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
  * @Author: s204423, s204452, and s205339
  */
 
-const PipelineComposer = () => {
+export default function PipelineComposer() {
     return (
         <ReactFlowProvider>
             <Flow />
@@ -27,6 +27,8 @@ const PipelineComposer = () => {
     )
 }
 
+/*
 export default withAuthenticationRequired(PipelineComposer, {
     onRedirecting: () => (<LoadingSpinner />)
 });
+*/
