@@ -39,6 +39,11 @@ import ResourceList from './Parts/ResourceList';
 import {addNewPipeline} from '../../redux/slices/pipelineSlice';
 import {NodeState} from '../../redux/states/pipelineState';
 import { toast } from 'react-toastify';
+import OperatorUploadButton from './Buttons/OperatorUploadButton';
+/**
+ * All new changes are made by:
+ * @Author: s216160, s204166, s204178, s204197, s204423, s204452, s205339 and s204152
+ */
 
 const drawerWidth = 240;
 
@@ -50,12 +55,14 @@ const DrawerHeader = styled('div')(({theme}) => ({
   justifyContent: 'flex-end',
 }));
 
-/**
- * All new changes are made by:
- * @Author: s204423, s204452, and s205339
- */
 
-const PersistentDrawerLeft: React.FC = () => {
+
+interface Folder {
+  currentFolderID: string,
+  setCurrentFolderID: Function
+}
+
+const PersistentDrawerLeft: React.FC<Folder> = ({currentFolderID, setCurrentFolderID}: {currentFolderID: string, setCurrentFolderID: Function}) => {
   const dispatch = useAppDispatch();
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
@@ -142,7 +149,10 @@ const PersistentDrawerLeft: React.FC = () => {
     setLoading(true);
     try {
       await deleteRepository(selectedRepository.organizationId, selectedRepository.id);
+      console.log("Repository deleted successfully");
       dispatch(repositoryThunk(organizations));
+      setSuccessMessage(`Repository ${selectedRepository.name} deleted successfully!`);
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error("Error deleting repository:", error);
       toast.error("Error in deleting repository");
@@ -179,11 +189,10 @@ const PersistentDrawerLeft: React.FC = () => {
 
   const handlePipelineClick = async (pipeline: Pipeline) => {
     const response = await fetchPipeline(pipeline.organizationId, pipeline.repositoryId, pipeline.id);
-
     dispatch(addNewPipeline({
       id: "pipeline-" + pipeline.id,
       name: response.result.pipelines[0].name as string,
-      currentFolderID: "",
+      currentFolderID: currentFolderID,
       flowData: response.result.pipelines[0].pipeline as NodeState
     }));
   };
@@ -278,12 +287,17 @@ const PersistentDrawerLeft: React.FC = () => {
                           <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
                                         listName={"Operators"} typeName={"operator"}/>
                         )}
+                        {resources.filter(resource => resource.repositoryId === repository.id && resource.type === 'pipeline result').length > 0 && (
+                          <ResourceList repository={repository} resources={resources} handleDownload={handleDownload}
+                                        listName={"Pipeline results"} typeName={"pipeline result"}/>
+                        )}
 
                         {resources.filter(resource => resource.repositoryId === repository.id && (
                           resource.type === 'eventLog' ||
                           resource.type === 'bpmnModel' ||
                           resource.type === 'petriNet' ||
-                          resource.type === 'operator'
+                          resource.type === 'operator' ||
+                          resource.type === 'pipeline result'
                         )).length === 0 && (
                           <ListItem>
                             <ListItemText
@@ -292,6 +306,7 @@ const PersistentDrawerLeft: React.FC = () => {
                             />
                           </ListItem>
                         )}
+                        <OperatorUploadButton orgId={organization.id} repId={repository.id} />
 
                         <ListItem>
                           <ListItemText

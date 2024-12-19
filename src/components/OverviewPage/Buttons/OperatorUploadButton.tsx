@@ -22,7 +22,7 @@ const style = {
 
 /**
  * All new changes are made by:
- * @Author: s204423, s204452, and s205339
+ * @Author: s204423, s204452, s205339 and s204152
  */
 
 const OperatorUploadButton = ({ orgId, repId }: UploadButtonProps) => {
@@ -56,7 +56,8 @@ const OperatorUploadButton = ({ orgId, repId }: UploadButtonProps) => {
 
     return (
         <div>
-            <Button sx={{ backgroundColor: "gray", padding: "1px", color: "black" }} onClick={handleOpen}>+</Button>
+            <Button sx={{ backgroundColor: "white", paddingLeft: "10px", paddingRight: "10px",
+                paddingTop: "1px", paddingBottom: "1px", color: "black" }} onClick={handleOpen}>+ Operator</Button>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -80,7 +81,7 @@ const OperatorUploadButton = ({ orgId, repId }: UploadButtonProps) => {
                                 <input type="file" name="DockerfileFile" />
                             </FormControl>
 
-                            <Button type="submit" sx={{ backgroundColor: "gray", padding: "1px", color: "black" }}>Submit</Button>
+                            <Button type="submit" sx={{ backgroundColor: "white", padding: "1px", color: "black" }}>Submit</Button>
                         </form>
                     </Box>
                 </Box>

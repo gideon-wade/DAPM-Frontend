@@ -1,3 +1,7 @@
+/**
+ * All new changes are made by:
+ * @Author: s204197
+ */
 export class NoCurrentOrganizationsError extends Error {
     constructor(message = "Organization data is empty.") {
         super(message);

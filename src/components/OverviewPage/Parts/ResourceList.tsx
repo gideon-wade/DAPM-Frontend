@@ -2,6 +2,11 @@ import React from 'react';
 import {ListItem, ListItemButton, ListItemText} from '@mui/material';
 import {Resource} from '../../../redux/states/apiState';
 
+/**
+ * All new changes are made by:
+ * @Author: s204152
+ */
+
 interface ResourceListProps {
   repository: { organizationId: string, id: string, name: string };
   resources: Resource[];

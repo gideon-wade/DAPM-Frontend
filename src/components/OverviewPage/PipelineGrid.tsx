@@ -17,25 +17,30 @@ import {
 } from '../../redux/slices/pipelineSlice';
 import {getPipelines} from '../../redux/selectors';
 import FlowDiagram from './ImageGeneration/FlowDiagram';
-import ReactDOM from 'react-dom';
 import {toPng} from 'html-to-image';
 import {getNodesBounds, getViewportForBounds} from 'reactflow';
 import {v4 as uuidv4} from 'uuid';
 import {DndProvider} from 'react-dnd';
 import {HTML5Backend} from 'react-dnd-html5-backend';
-import {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import LogoutButton from './Buttons/LogoutButton';
 import StatisticsButton from './Buttons/StatisticsButton';
-import { BarChart, PieChart, LineChart } from '@mui/x-charts';
+import {BarChart, LineChart, PieChart} from '@mui/x-charts';
 import ButtonWithDropDown from "./Buttons/ButtonDropDownCmp";
-import CheckboxDropdown, { CheckboxState } from "./Buttons/SelectFilterButton";
+import CheckboxDropdown, {CheckboxState} from "./Buttons/SelectFilterButton";
 import ResourceUpload from './Parts/ResourceUpload';
 import {Organization, Repository} from "../../redux/states/apiState";
 import {useAppDispatch, useAppSelector} from "../../hooks";
 import {getOrganizations, getRepositories} from "../../redux/selectors/apiSelector";
 import {UploadFile} from "@mui/icons-material";
 import {resourceThunk} from "../../redux/slices/apiSlice";
+import {createRoot} from "react-dom/client";
+
+/**
+ * All new changes are made by:
+ * @Author: s204152, s204197, s204178
+ */
+
 
 interface DraggableGridItemProps {
   id: string;
@@ -66,14 +71,13 @@ const DraggableGridItem: React.FC<DraggableGridItemProps> = ({ id, name, imgData
   );
 };
 
-export default function AutoGrid() {
+export default function AutoGrid({currentFolderID, setCurrentFolderID}: {currentFolderID: string, setCurrentFolderID: Function}) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const pipelines = useSelector(getPipelines);
   const [resourceUploadOpen, setResourceUploadOpen] = useState(false);
   const organizations: Organization[] = useAppSelector(getOrganizations);
   const repositories: Repository[] = useAppSelector(getRepositories);
-  const [currentFolderID, setCurrentFolderID] = useState('');
 
   const handleResourceUploadOpen = () => {
     setResourceUploadOpen(true);
@@ -90,7 +94,7 @@ export default function AutoGrid() {
   };
 
   const createNewPipeline = () => {
-    dispatch(addNewPipeline({ id: `pipeline-${uuidv4()}`, currentFolderID, name: "unnamed pipeline", flowData: { nodes: [], edges: [], state: 0} }));
+    dispatch(addNewPipeline({ id: `pipelineNew-${uuidv4()}`, currentFolderID, name: "unnamed pipeline", flowData: { nodes: [], edges: [], state: 0} }));
     { navigate("/pipeline") }
   }
   const createNewFolder = () => {
@@ -170,6 +174,36 @@ export default function AutoGrid() {
     3: "Errored",
   };
 
+  const RenderPreviewImageCallback: React.FC<{ nodes: any, edges: any, pipelineId: string, container: HTMLElement }> = ({ nodes, edges, pipelineId, container }) => {
+    useEffect(() => {
+      const width = 800;
+      const height = 600;
+      const nodesBounds = getNodesBounds(nodes!);
+      const { x, y, zoom } = getViewportForBounds(nodesBounds, width, height, 0.5, 2, 1);
+      const pipeline = document.querySelector(`#${pipelineId} .react-flow__renderer`) as HTMLElement;
+      if (!pipeline) {
+        console.log(`#${pipelineId} .react-flow__renderer not found`);
+        return;
+      }
+      toPng(pipeline, {
+        backgroundColor: '#333',
+        width: width,
+        height: height,
+        style: {
+          width: `${width}`,
+          height: `${height}`,
+          transform: `translate(${x}px, ${y}px) scale(${zoom})`,
+        },
+      }).then((dataUrl) => {
+        dispatch(setImageData({ id: pipelineId, imgData: dataUrl }));
+        document.body.removeChild(container);
+      });
+    }, [nodes, edges, pipelineId, container]);
+
+    return <FlowDiagram nodes={nodes} edges={edges} />;
+  };
+
+
   pipelines.map(({ pipeline: flowData, id, folderID }) => {
     const nodes = flowData.nodes;
     const edges = flowData.edges;
@@ -179,31 +213,8 @@ export default function AutoGrid() {
     container.style.top = '-10000px';
     container.id = pipelineId;
     document.body.appendChild(container);
-
-    ReactDOM.render(
-        <FlowDiagram nodes={nodes} edges={edges} />,
-        container,
-        () => {
-          const width = 800;
-          const height = 600;
-          const nodesBounds = getNodesBounds(nodes!);
-          const { x, y, zoom } = getViewportForBounds(nodesBounds, width, height, 0.5, 2, 1);
-
-          toPng(document.querySelector(`#${pipelineId} .react-flow__viewport`) as HTMLElement, {
-            backgroundColor: '#333',
-            width: width,
-            height: height,
-            style: {
-              width: `${width}`,
-              height: `${height}`,
-              transform: `translate(${x}px, ${y}px) scale(${zoom})`,
-            },
-          }).then((dataUrl) => {
-            dispatch(setImageData({ id: pipelineId, imgData: dataUrl }));
-            document.body.removeChild(container);
-          });
-        }
-    );
+    const root = createRoot(container)
+    root.render(<RenderPreviewImageCallback nodes={nodes} edges={edges} pipelineId={pipelineId} container={container} />);
   });
 
   const renderChart = (stateCount: number[], labels: string[]) => {
@@ -255,7 +266,7 @@ export default function AutoGrid() {
   
 
   const renderContent = () => {
-    {/* Statistics View  - This should be seperate cards and dropdown menu for filters and charts*/}
+    {/* TODO: Statistics View  - This should be seperate cards and dropdown menu for filters and charts*/}
     if (currentStatsView) {
       const { stateCount, labels } = sortPipelinesByState();
       return (
@@ -345,7 +356,7 @@ export default function AutoGrid() {
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '10px' }}>
         <Box sx={{ display: 'flex', gap: '10px' }}>
           <StatisticsButton onToggle={handleToggleStatView} />
-          <LogoutButton />
+          {/*<LogoutButton />*/}
         </Box>
       </Box>
       {renderContent()}

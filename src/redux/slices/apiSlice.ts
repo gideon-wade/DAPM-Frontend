@@ -13,7 +13,7 @@ export const initialState: ApiState = {
 
 /**
  * All new changes are made by:
- * @Author: s204423, s204452, and s205339
+ * @Author: s204423, s204452, s204197, and s205339
  */
 
 const apiSlice = createSlice({

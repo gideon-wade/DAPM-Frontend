@@ -12,12 +12,12 @@ import { DataSinkNodeData, DataSourceNodeData, FlowData, OperatorNodeData, Organ
 import { getOrganizations, getRepositories } from "../../redux/selectors/apiSelector";
 import { getHandleId, getNodeId } from "./Flow";
 import { validate } from "./validation/validation";
-import { deletePipeline, putCommandStart, putExecution, putPipeline } from "../../services/backendAPI";
+import { deletePipeline, putCommandStart, putExecution, putPipeline, executionStatus } from "../../services/backendAPI";
 import { toast } from 'react-toastify';
 
 /**
  * All new changes are made by:
- * @Author: s204423, s204452, and s205339
+ * @Author: s216160, s204166, s204178, s204197, s204423, s204452, and s205339
  */
 import { pipeline } from "stream";
 
@@ -52,39 +52,24 @@ export default function PipelineAppBar() {
     const executionId = await putExecution(selectedOrg.id, selectedRepo.id, pipelineId);
     await putCommandStart(selectedOrg.id, selectedRepo.id, pipelineId, executionId);
     toast.update(loadingToast, {
-      render: "Deployed pipeline: " + pipelineName,
-      type: "success",
-      isLoading: false,
-      autoClose: 3000,
+      render: "Running pipeline: " + pipelineName,
+      isLoading: true
     });
-  };
-
-
-  const STATUS = {
-    UNDEPLOYED: "Undeployed",
-    DEPLOYED: "Deployed",
-    FINISHED: "Finished",
-    ERROR: "Error",
-  };
-  const [status, setStatus] = useState(STATUS.UNDEPLOYED);
-
-  const handleSetStatus = () => {
-    switch (flowData?.state) {
-      case 0:
-        setStatus(STATUS.UNDEPLOYED);
-        break;
-      case 1:
-        setStatus(STATUS.DEPLOYED);
-        break;
-      case 2:
-        setStatus(STATUS.FINISHED);
-        break;
-      case 3:
-        setStatus(STATUS.ERROR);
-        break;
-      default:
-        console.warn("Unknown state:", flowData?.state);
-        break;
+    try {
+      await executionStatus(selectedOrg.id, selectedRepo.id, pipelineId, executionId);
+      toast.update(loadingToast, {
+        render: "Pipeline finished: " + pipelineName,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    } catch (e) {
+      toast.update(loadingToast, {
+        render: "Failed to run pipeline: " + pipelineName,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
     }
   };
 
@@ -119,17 +104,12 @@ export default function PipelineAppBar() {
     dispatch(updatePipelineState(state)); // Ensure dispatch is accessible
   };
 
-  useEffect(() => {
-    handleSetStatus(); 
-  }, []);
-
   const flowData = useSelector(getActiveFlowData)
   console.log("FlowData: ", flowData);
   
   const generateJson = async () => {
     //MA
     updateFlowState(1);
-    setStatus("Deployed")
     //
     var edges = flowData!.edges.map(edge => {
       return { sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle }
@@ -238,7 +218,7 @@ export default function PipelineAppBar() {
       pipeline: flowClone,
       timestamp: flowClone?.timestamp
     };
-    if (pipelineId != undefined) {
+    if (pipelineId != undefined && pipelineId.split("-")[0] != "pipelineNew") {
       try {
         const deleted = await deletePipeline(selectedOrg.id, selectedRepo.id, pipelineId.split("-").slice(1).join("-"))
       } catch {
@@ -257,17 +237,22 @@ export default function PipelineAppBar() {
 
   const uploadPipeline = async () => {
     let selectedPipeline: HTMLInputElement = document.getElementById("pipelineSelectInput") as HTMLInputElement
-
+    const loadingToast = toast.loading("Uploading pipeline: " + pipelineName);
     if (selectedPipeline!.files!.length > 0) {
       let file = selectedPipeline!.files![0];
       let text = await file.text();
       //console.log(text);
       dispatch(setFlowdata(JSON.parse(text)));
     }
+    toast.update(loadingToast, {
+      render: "Uploaded pipeline: " + pipelineName,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
   }
 
   const downloadPipeline = async () => {
-
     const selectedOrg = organizations[0]
     const selectedRepo = repositories.filter(repo => repo.organizationId === selectedOrg.id)[0]
 
@@ -279,10 +264,10 @@ export default function PipelineAppBar() {
     });
     
     let tmp = document.createElement("a");
-    tmp.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(flowClone));
+    tmp.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURI(JSON.stringify(flowClone)));
     tmp.setAttribute('download', pipelineId+".json");
     tmp.click();
-
+    toast.success("Downloaded pipeline: " + pipelineName);
   }
 
   const [open, setOpen] = useState(false);
@@ -327,9 +312,6 @@ export default function PipelineAppBar() {
         </Box>
         )}
       </Box>
-      <Typography variant="body1" sx={{ color: "white" }}>
-        Status: {status}
-      </Typography>
       <Button>
         <label htmlFor="pipelineSelectInput">
         <Typography variant="body1" sx={{ color: "white" }}>Upload pipeline</Typography>
@@ -343,7 +325,7 @@ export default function PipelineAppBar() {
         <Typography variant="body1" sx={{ color: "white" }}>Save pipeline</Typography>
       </Button>
       
-      <Button onClick={() => status != STATUS.DEPLOYED ? generateJson() : generateJson()}>
+      <Button onClick={() => generateJson()}>
         <Typography variant="body1" sx={{ color: "white" }}>Deploy pipeline</Typography>
       </Button>
       {showErrorPopup && (

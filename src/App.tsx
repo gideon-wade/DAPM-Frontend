@@ -15,6 +15,11 @@ import PipelineComposer from "./routes/PipeLineComposer";
 import UserPage from "./routes/OverviewPage";
 import {loadState, saveState} from "./redux/browser-storage";
 
+/**
+ * All new changes are made by:
+ * @Author: s216160
+ */
+
 // Configure redux-persist
 const persistConfig = {
   key: 'root',
