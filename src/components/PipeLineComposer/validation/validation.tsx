@@ -1,5 +1,9 @@
 import { Edge, Node } from "reactflow";
 import { DataSinkNodeData, DataSourceNodeData, FlowData, OperatorNodeData, OrganizationNodeData } from "../../../redux/states/pipelineState";
+/**
+ * All new changes are made by:
+ * @Author: s204166
+ */
 
 export const validate = (flowdata: FlowData) :  [string,string][] => {
   const errors: [string, string][] = [];
