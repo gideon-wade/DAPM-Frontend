@@ -103,6 +103,22 @@ const getFile = async (ticketId: string): Promise<any> => {
     throw new Error('Failed to fetch data');
 };
 
+export async function checkAuthorization(userId: string): Promise<boolean> {
+    try {
+      const response = await post('/authorized', { user_id: userId });
+      if (response && typeof response.authorized === 'boolean') {
+        return response.authorized;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking authorization:', error);
+      return false;
+    }
+  }
+
+
+
+
 export async function PostNewPeer (domainName: string) {
     let response = await post(`/system/collab-handshake`, { targetPeerDomain: domainName });
 	return await getData(response.ticketId);
