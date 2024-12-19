@@ -13,6 +13,11 @@ import {useDrag, useDrop} from 'react-dnd';
 import SourceIcon from '@mui/icons-material/Source';
 import EditIcon from '@mui/icons-material/Edit';
 
+/**
+ * All new changes are made by:
+ * @Author: s204197
+ */
+
 const ItemType = 'CARD';
 
 export interface PipelineCardProps {

@@ -12,6 +12,11 @@ import {
 import {createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {EdgeData, NodeData, NodeState, PipelineData, PipelineState} from "../states/pipelineState";
 
+/**
+ * All new changes are made by:
+ * @Author: s204197
+ */
+
 export const initialState: PipelineState = {
   pipelines: [],
   activePipelineId: ""
