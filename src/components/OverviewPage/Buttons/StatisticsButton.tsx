@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from '@mui/material';
 
+/**
+ * All new changes are made by:
+ * @Author: s183812
+ */
+
 interface StatisticsButtonProps {
   onToggle?: (newStatsView: boolean) => void; 
 }

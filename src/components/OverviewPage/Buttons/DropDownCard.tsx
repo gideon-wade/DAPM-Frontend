@@ -2,6 +2,11 @@ import React from "react";
 import Button from "@mui/material/Button";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 
+/**
+ * All new changes are made by:
+ * @Author: s183812
+ */
+
 const theme = createTheme({
   palette: {
     primary: {

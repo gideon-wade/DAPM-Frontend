@@ -1,6 +1,11 @@
 import {Edge, Node} from 'reactflow';
 import {Organization, Repository, Resource} from './apiState';
 
+/**
+ * All new changes are made by:
+ * @Author: s183812
+ */
+
 export interface PipelineState {
   pipelines: PipelineData[]
   activePipelineId: string

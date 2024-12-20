@@ -14,7 +14,7 @@ import {EdgeData, NodeData, NodeState, PipelineData, PipelineState} from "../sta
 
 /**
  * All new changes are made by:
- * @Author: s204197
+ * @Author: s204197, s183812
  */
 
 export const initialState: PipelineState = {

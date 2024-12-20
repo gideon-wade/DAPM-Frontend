@@ -2,6 +2,11 @@ import React, { useRef, useState, useEffect } from "react";
 import ChartButton from "./ChartButton";
 import DropDownCard from "./DropDownCard";
 
+/**
+ * All new changes are made by:
+ * @Author: s183812
+ */
+
 const chartTypes = ["Bar Chart", "Point Chart", "Pie Chart"];
 
 interface ButtonWithDropDownCmpProps {
